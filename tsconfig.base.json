@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "sourceMap": true,
+    "composite": true,
+    "resolveJsonModule": true,
+    "paths": {
+      "@tower-defense/content": ["./packages/content/src/index.ts"],
+      "@tower-defense/sim": ["./packages/sim/src/index.ts"],
+      "@tower-defense/testkit": ["./packages/testkit/src/index.ts"],
+      "@tower-defense/world-01/*": ["./content/world-01/*"]
+    }
+  }
+}

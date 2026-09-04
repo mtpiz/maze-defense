@@ -1,0 +1,3 @@
+# Limit free World One Research to meaningful choices
+
+Main-path rewards before the first boss will fund Blueprint Level 2 for approximately two chosen specialists. Optional Missions and improved Star Ratings will fund a third, while World One cleanup and Masteries can complete the remaining Level 2 progression. The boss opens the Level 3 Blueprint Ceiling, but the immediately available earned Research will fund only one chosen Level 3 advancement. This creates visible permanent growth and real account choices while leaving purchases as acceleration rather than a requirement for the World Gate.

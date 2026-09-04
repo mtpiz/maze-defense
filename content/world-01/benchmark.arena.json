@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 2,
+  "id": "world-01-benchmark",
+  "name": "Frontier Routing Range",
+  "width": 9,
+  "height": 14,
+  "spawn": { "x": 0, "y": 2 },
+  "exit": { "x": 8, "y": 11 },
+  "waypoints": [
+    { "x": 7, "y": 3 },
+    { "x": 1, "y": 10 }
+  ],
+  "inactive": [],
+  "terrain": [
+    {
+      "id": "machine-block",
+      "cells": [
+        { "x": 3, "y": 0 },
+        { "x": 4, "y": 0 },
+        { "x": 5, "y": 0 },
+        { "x": 4, "y": 6 },
+        { "x": 4, "y": 7 },
+        { "x": 3, "y": 13 },
+        { "x": 4, "y": 13 },
+        { "x": 5, "y": 13 }
+      ],
+      "buildable": false,
+      "traversable": { "ground": false, "air": false }
+    }
+  ]
+}

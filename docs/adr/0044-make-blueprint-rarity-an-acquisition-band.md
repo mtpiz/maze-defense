@@ -1,0 +1,3 @@
+# Make Blueprint Rarity an acquisition band
+
+Standard Blueprints will be earned through one main or optional Mission, Advanced Blueprints through up to three deterministic objectives within one World, and Exotic Blueprints through up to three Segments distributed across distant capstone Masteries, Worlds, or permanent modes. An Exotic becomes purchasable only after a playable preview and after its complete free path exists in released content. Rarity will create purchase incentive through acquisition distance, mechanics, and presentation rather than random drops, duplicate fragments, repetitive grinding, or a higher maximum Blueprint Level.

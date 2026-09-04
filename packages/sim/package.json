@@ -1,0 +1,10 @@
+{
+  "name": "@tower-defense/sim",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@tower-defense/content": "0.0.0"
+  }
+}

@@ -1,0 +1,3 @@
+# Reward Research for progress, not easy repetition
+
+First clears, improved Star Ratings, Masteries, and World bosses will provide substantial one-time Research, while ordinary repeated Campaign clears provide none. Across the eventual full platform, Endurance milestones and verified Community Arenas will provide renewable Research; Community rewards may be calculated algorithmically from validated difficulty signals such as a low pass rate, subject to sample-size, reward-cap, and anti-abuse safeguards. These systems remain outside the six-month Vertical Slice, which only needs to preserve the future reward seam rather than implement them.

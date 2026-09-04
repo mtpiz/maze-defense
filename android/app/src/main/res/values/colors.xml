@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#68E0AD</color>
+    <color name="colorPrimaryDark">#020507</color>
+    <color name="colorAccent">#55DBFF</color>
+    <color name="nmdSystemBar">#020507</color>
+</resources>

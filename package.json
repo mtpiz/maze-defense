@@ -1,0 +1,31 @@
+{
+  "name": "tower-defense-v2",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "content/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @tower-defense/game",
+    "build": "npm run typecheck && npm run build --workspace @tower-defense/game",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts",
+    "typecheck": "tsc -b && tsc -p tsconfig.tests.json",
+    "cap:add:android": "npm run build && cap add android",
+    "cap:sync:android": "npm run build && cap sync android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@preact/preset-vite": "^2.10.5",
+    "typescript": "^6.0.2",
+    "vite": "^6.4.1",
+    "vitest": "^4.1.1"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

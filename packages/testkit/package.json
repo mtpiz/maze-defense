@@ -1,0 +1,11 @@
+{
+  "name": "@tower-defense/testkit",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@tower-defense/content": "0.0.0",
+    "@tower-defense/world-01": "0.0.0"
+  }
+}

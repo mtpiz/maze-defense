@@ -1,0 +1,9 @@
+{
+  "name": "@tower-defense/world-01",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./benchmark.arena.json": "./benchmark.arena.json"
+  }
+}

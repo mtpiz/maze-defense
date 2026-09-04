@@ -1,0 +1,9 @@
+# Prove Pixi with a four-week visual and performance gate
+
+Status: Superseded by [ADR-0092](0092-prove-presentation-feasibility-before-production-art.md).
+
+The successor will begin with Pixi 8 using its production WebGL renderer for the battlefield and Preact for the responsive HUD and non-battle screens. This preserves the value of the existing deterministic TypeScript simulation without preserving the prototype's visual layer. Gameplay state will cross a narrow presentation seam as snapshots and presentation events; authored sprites, animation, particles, lighting effects, audio, and UI will remain outside the simulation.
+
+Pixi remains the renderer only if a four-week portrait-mobile proof reaches the agreed visual benchmark and holds 60 frames per second during normal and accelerated play with 50 active creeps on a representative three-year-old midrange Android device. Expensive presentation settings such as particle density, bloom, shadows, and render resolution may scale down by device; simulation behavior and tactical readability may not. The proof must include a portrait Arena that fills the usable play space, the Foundation Tower and representative specialist towers, route changes, a complete anticipation-to-impact-to-death combat chain, effects, a real HUD and contextual tower sheet, audio, and haptics. If it cannot meet the benchmark without fragile custom rendering work, or if the desired art direction proves to require runtime 3D lighting, cameras, or skeletal meshes, production moves to Godot before the remaining World content is built.
+
+The initial art portfolio will be produced with frontier image-generation models, AI design tools, and other assisted production tools under a shared style bible. A human art director is not part of the initial plan; if the proof cannot achieve sufficient asset consistency, readability, and finish, bringing in an art director becomes the next remedy rather than lowering the benchmark silently.

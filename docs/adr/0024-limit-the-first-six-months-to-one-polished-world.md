@@ -1,0 +1,5 @@
+# Limit the first six months to one polished World
+
+The six-month Vertical Slice will contain one polished World with ten main Missions, two optional Missions, and approximately eight Arenas; the Foundation Tower and four specialist Tower Blueprints, with three specialists chosen per Loadout and Blueprint Levels 1–3; eight creep families and one boss; shared ground and Airborne routing; Threat Forecasts, Star Ratings, and Mastery; Schematic and Research progression; portrait touch controls; tutorial, profile, replay, analytics, crash reporting, art, audio, performance work, and a closed mobile test. It will prove a minimal Prism purchase flow, one exact Blueprint or Schematic purchase, and one optional rewarded-ad placement without building a production store or advertising stack.
+
+Expedition, Community Arenas, Endurance, additional Worlds, seasons, a large cosmetic catalog, PvP, co-op, and production community services are outside this Vertical Slice. The slice prioritizes replayable tactical depth and release-quality presentation over breadth.

@@ -1,0 +1,3 @@
+# Make Gravity World One's earn-or-buy Blueprint
+
+World One will begin with Rail, award Arc through the early main path, and award Siege through an optional mid-World challenge. One optional Mission will loan Gravity, the working-name control family, at fixed Level 3 and allow either Specialization: earning three Stars on that Trial awards its first Segment, completing its Mastery awards the second, and mastering the World boss awards the third. The exact Prism purchase becomes visible after completing the Trial. This gives every player a complete three-specialist Loadout without Gravity while establishing a desirable, permanently earnable Blueprint as the Vertical Slice's primary conversion test.

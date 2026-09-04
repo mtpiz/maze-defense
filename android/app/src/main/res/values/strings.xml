@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Tower Defense v2</string>
+    <string name="title_activity_main">Tower Defense v2</string>
+    <string name="package_name">com.towerdefensev2.game</string>
+    <string name="custom_url_scheme">com.towerdefensev2.game</string>
+</resources>

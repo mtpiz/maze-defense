@@ -1,0 +1,3 @@
+# Delay weapons without delaying route changes
+
+A legal Foundation placement will change routing immediately, while its weapon completes a brief assembly animation before becoming operational. Specialist installations and upgrades will take approximately one to three seconds and temporarily leave that weapon offline while the Foundation continues blocking its applicable routes. Refits will take longer. Construction performed during the untimed opening phase completes before the first wave begins, preserving experimentation and clear opening plans without removing timing pressure from live combat.
