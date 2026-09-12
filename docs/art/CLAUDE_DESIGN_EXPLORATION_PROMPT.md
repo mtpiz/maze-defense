@@ -1,11 +1,13 @@
-# Claude Design Prompt: Neon Combat UI
+# Claude Design Prompt: Neon and World One Exploration
 
-Updated: 2026-09-11. Ready for a new Claude Design project; not a production-style approval.
-This replaces the earlier request for four styles and multiple Worlds.
+Updated: 2026-09-12. Ready for a new Claude Design project; not a production-style approval.
+This revision supersedes the single-direction, fully interactive HTML target: explore several
+neon and World One variations first, then let the owner select what to develop.
 
-The opening brief below is self-contained. No codebase upload or previous concept image is required.
-Optional reference screenshots or clips should illustrate the four specific reference qualities,
-not instruct Claude to copy a whole game. Earlier generated mockups are not approved references.
+The opening brief below includes the gameplay context. The owner will upload World One reference
+assets alongside it. Use those assets as visual references, not as an automatically approved final
+design. No codebase upload is required. Reference-game screenshots or clips can clarify the four
+specific qualities below without instructing Claude to copy a whole game.
 
 ## Opening Brief
 
@@ -13,11 +15,17 @@ not instruct Claude to copy a whole game. Earlier generated mockups are not appr
 You are designing the playable interface, tower visual language, and enemy visual language for
 Maze Defense, a working-title portrait Android mazing tower-defense game.
 
-Create ONE cohesive, polished, retro-neon space direction and an interactive, animated prototype.
-Do not give us another broad style exploration, four different themes, a marketing page, a slide
-deck, a world map, or a realistic battlefield illustration. Start on the actual playable mission
-screen. Focus on the HUD, grid interaction, tower design and mechanical identity, geometric creeps,
-and the satisfaction of combat. We will explore other Worlds only after this foundation works.
+Create MULTIPLE distinct visual directions for me to explore before we choose a favorite.
+Start with six concepts: three retro-neon space variations (N1-N3) and three World One variations
+(W1-W3) informed by the reference assets I upload. These should be meaningfully different HUD,
+arena, tower, and creep treatments, not six palette swaps of one layout.
+
+Prioritize breadth, design quality, and easy comparison over perfecting a single HTML prototype.
+Do not spend the first pass building a complete game or wiring every interaction. Editable visual
+boards, screen studies, asset sheets, and lightweight motion studies are appropriate. An HTML
+comparison gallery is optional, not the goal. Start with actual mission-screen designs, not a
+marketing page, world map, or cinematic battlefield illustration. Explore only neon and World One;
+do not invent additional Worlds or change the gameplay to make a style look better.
 
 We want substantially more design craft and completeness than a plain grid with a statistics strip
 and two tower buttons. Simple 2D units are intentional; a simplistic, generic interface is not.
@@ -40,7 +48,8 @@ The Tower - Idle Tower Defense:
 - Begin with simple geometric enemies, not detailed insects or realistic creatures.
 - The key effect: defeated shapes explode into many smaller particles OF THE SAME SHAPE.
   Triangles break into triangles, squares into squares, circles into circles. Make this visible
-  and satisfying in motion, not a static note or a generic smoke/spark effect.
+  and satisfying through a short motion study or clear frame sequence, not just a written note
+  or a generic smoke/spark effect. Full animation can follow shortlist selection.
 - Its idle gameplay, monetization, and UI are not requirements for our game.
 
 Tomb of the Mask on Android:
@@ -49,38 +58,62 @@ Tomb of the Mask on Android:
 - Apply that energy to tower-defense decisions. Do not turn the game into a platformer or hide
   strategic choices behind frantic interaction. Do not copy its controls, ads, or progression.
 
-2. VISUAL DIRECTION
+2. TWO EXPLORATION TRACKS, SHARED READABILITY RULES
 
-- Retro, neon, space, geometric, primarily 2D. No AAA realism and no detailed modeled machinery.
+Neon track (N1-N3):
+- Explore different interpretations of retro-neon space: typography, control placement, arena
+  treatment, tower silhouettes, line weight, color relationships, and effect language can vary.
+- Make the alternatives recognizably different, not the same screen with a new accent color.
+- Quiet near-black or neutral-dark ground, a restrained grid, and distinct vivid accent colors
+  with specific jobs are useful starting points, not a fixed palette for every concept.
+
+World One track (W1-W3):
+- World One is Brood World: an environment under biological or biomechanical infestation.
+  Inspect the uploaded reference assets first. Briefly identify which visual qualities you take
+  from which assets, then offer three different interpretations rather than tracing one image.
+- Let the assets guide terrain motifs, palette, texture, atmosphere, and restrained creep accents.
+  Vary the HUD composition and tower language too; do not merely replace the neon background.
+- Keep player towers coherent futuristic technology, not biological or medieval structures.
+  Brood identity should come chiefly from the arena and enemy treatment.
+- Keep creeps simple and geometrically readable. Stylize organic motifs as clean 2D shapes and
+  patterns, not detailed insect anatomy. Preserve shape-matched deaths and mechanical identities.
+- Do not force all World One concepts into neon if the references suggest another treatment.
+  Retain the simple, stylized 2D scope and strong combat readability across both tracks.
+- If the referenced uploads are missing or unreadable, ask me to attach them before designing
+  the World One concepts. You can proceed with neon meanwhile; do not invent their contents.
+
+Shared constraints:
+- Primarily 2D, stylized, and readable. No AAA realism and no detailed modeled machinery.
 - Depth comes from short consistent shadows, layer separation, restrained highlights, and emissive
   accents, not heavyweight 3D assets, steep perspective, realistic lighting, or cinematic scenery.
-- Quiet near-black or neutral-dark ground, a restrained grid, and several distinct vivid accent
-  colors with specific jobs. Avoid a monochrome teal wash or a purple gradient theme.
+- Avoid a monochrome teal wash or a purple gradient theme across the entire set. Explore deliberate
+  palette differences while maintaining clear value separation between board, units, and controls.
 - Crisp solid cores underneath glow. Distinguish friendly towers, threats, objectives, selection,
   and invalid actions through shape/value as well as color. Beams should pop without bleaching cells.
 - Give the interface a deliberate visual rhythm: strong typography, custom coherent tower icons,
   a complete command hierarchy, and polished pressed, selected, disabled, and warning states.
 - No realistic weapons, gritty concrete, metal bolts, detailed bugs, fantasy buildings, glossy
   plastic miniatures, ornamental dashboard cards, or decorative star particles over the playfield.
-- Do not reuse an inherited corporate/SaaS design system. Establish a small game-specific neon
-  component system for this project. Do not interpret 'retro' as unreadably small pixel text.
+- Do not reuse an inherited corporate/SaaS design system. Give each concept a coherent game-specific
+  component language. Do not interpret 'retro' as unreadably small pixel text.
 
 3. GAMEPLAY CONTRACT AND BOARD
 
 - This is an active mazing tower-defense game. Players spend Field Credits to construct Foundation
   towers and develop specialists, creating a longer legal route while balancing combat investment.
 - The default arena is 9 columns by 14 rows of square cells. Other dimensions are content-defined,
-  but this prototype should prove this one arena well. No hexagons or angled/isometric board.
+  but all concepts should compare this one arena. No hexagons or angled/isometric board.
 - Ground creeps travel from Spawn through permanent numbered Waypoints in order to Exit. Towers
   block ground movement. Construction cannot completely seal the required route.
 - Airborne creeps use the same ordered Waypoints but ignore player towers, with a distinguishable
   route layer. Do not depict an airborne enemy as using an entirely unrelated destination.
 - Placement is available during planning AND active combat. Show valid and invalid placement,
   affordability, selection/range feedback, and route changes without hiding the board.
-- The initial camera fits the whole board. Pinch zoom and map pan must work; add an obvious fit/
+- The intended initial camera fits the whole board. Design for pinch zoom and map pan, with a fit/
   recenter action. HUD stays fixed and readable while the map moves. Zoom may crop the board, but
   must never strand the user or cause offscreen placement. Make touch pan versus placement intent
-  unambiguous and show the selected cell clearly.
+  unambiguous and show the selected cell clearly. In the exploration pass, illustrate these states;
+  working camera interactions are a later shortlisted-prototype requirement.
 - The arena owns most of the screen. Controls may be rearranged creatively, but preserve thumb
   access, no path-obscuring panels, no viewport overflow, and a stable battlefield when selecting.
 - Planning may show a faded route preview; combat suppresses route clutter. Waypoints stay visible.
@@ -96,11 +129,12 @@ It does not mean only three individual towers can be placed; one slot unlocks a 
 
 Show all four specialist families in a small pre-mission Loadout selector, with exactly three
 selected and one excluded. For the main mission example use Foundation + Rail + Siege + Arc.
-Also allow a loadout swap that replaces Arc with Gravity so its mechanics and visuals can be seen.
+Show a secondary loadout example replacing Arc with Gravity so its mechanics and visuals can be seen;
+the first pass does not need a functioning loadout selector.
 Before three families are owned, unused slots remain visible. Do not invent additional tower names
 or force a permanently equipped fifth family into a three-specialist mission.
 
-The prototype may expose all four families to evaluate their designs now. This is a design preview,
+The concepts may expose all four families to evaluate their designs now. This is a design preview,
 not a claim that all four are unlocked early or implemented in the current APK. Do not expand Worlds
 or production scope merely to demonstrate the full roster.
 
@@ -143,14 +177,15 @@ Gravity:
 - A ring/field-anchor silhouette, clearly readable when idle. Controlled inward pulses or tethers,
   not a giant foggy orb that hides creeps. Working branch identities: Well and Tether.
 
-For every family show a black-silhouette readability check, finished neon treatment at actual
-board size, selected/range state, firing sequence, impact/response, and a concise mechanical role.
-Present a coherent family comparison sheet, not just two enormous Rail/Siege drawings.
+For each concept, show all five families as silhouettes and in that concept's treatment at actual
+board size. Include a concise mechanical role and representative firing/impact frames. Present a
+coherent family comparison sheet, not just two enormous Rail/Siege drawings. After shortlisting,
+expand selected/range states and firing sequences for the preferred tower designs.
 
 Specialist field development: Level 1 is the shared base, Level 2 improves behavior, Level 3 selects
 one owned branch, and Levels 4-5 deepen that branch. Different towers of a family can use different
-branches. Demonstrate the major Level-3 silhouette change for Rail and Siege without producing an
-exhaustive asset catalog. Mark proposed changes or missing mechanical decisions as proposals.
+branches. After shortlisting, demonstrate the major Level-3 silhouette change for Rail and Siege
+without producing an exhaustive asset catalog. Mark missing mechanical decisions as proposals.
 
 6. GEOMETRIC CREEPS AND SHAPE-PRESERVING DEATHS
 
@@ -171,13 +206,14 @@ The four-family benchmark uses Drone, Carapace, Broodling, and Glider. Skitter i
 Regenerator, Sporeguard, and Carrier are deferred candidates; do not expand this pass into their art
 or extra Worlds. Propose a shape mapping and maintain it consistently across the HUD and battlefield.
 
-Animate shape-preserving deaths: short impact confirmation, an outward burst of small copies of
+Show shape-preserving death studies: short impact confirmation, an outward burst of small copies of
 the defeated unit's primitive, quick deceleration/fade, then a clean cell. Preserve its color identity
 without making particles look like still-living enemies. Distinguish an Armor hit from Armor break.
-Demonstrate both one death and a simultaneous crowd clear, plus reduced-motion/effects variants.
+Start with a small frame sequence or lightweight loop per concept. After shortlisting, demonstrate
+both one death and a simultaneous crowd clear, plus reduced-motion/effects variants.
 Avoid screen-obscuring confetti, strobing, long particle trails, and mandatory screen shake.
 
-7. COMPLETE HUD AND INTERACTION STATES
+7. HUD CONTEXT AND STAGED INTERACTION COVERAGE
 
 Integrate Lives, wave progress, Field Credits, upcoming guaranteed wave income, pause/resume,
 simulation speed (1x/2x/3x), the active phase, and concise next-wave threat information.
@@ -189,7 +225,9 @@ inspection should expose targeting doctrine, relevant stats, available upgrade/b
 construction/temporary-disable state, and removal/refund information where allowed. Use realistic
 sample values only as mock data; do not invent final balance or a paid economy.
 
-Required coherent states in the same design system:
+For the first comparison, every concept needs planning, dense combat, and selected-tower views,
+plus the small Loadout study described above. Keep these coherent within each concept. The list
+below is the fuller state inventory for shortlisted designs, not six complete implementation jobs:
 - Opening/planning with placement preview and a clear Launch action.
 - Dense active combat: mixed creep shapes, multiple tower families, beams/arcs, area impacts, deaths.
 - Selected tower with a compact contextual upgrade/branch treatment; stable arena dimensions.
@@ -201,7 +239,8 @@ Required coherent states in the same design system:
 
 IMPORTANT RECOVERY DISTINCTION: the current build supports in-process pause/resume and restoring an
 opening plan, not durable mid-run recovery or a fully implemented failed-wave checkpoint replay.
-The owner wants continuation and replay after loss. Prototype these intended flows with clearly
+The owner wants continuation and replay after loss. When refining shortlisted designs, show these
+intended flows with clearly
 identified sample checkpoint data, preserving the last committed checkpoint consistently. Separate
 Resume Run, Replay Failed Wave, and Restart Mission; do not silently give rewards twice or pretend
 the checkpoint storage rules are already settled. Record unresolved retry/economy rules in handoff
@@ -211,18 +250,29 @@ Make transitions brisk, responsive, and rewarding. Fast enemies should differ me
 slow armored threats; do not merely speed every animation up. Touch decisions and feedback matter
 more than decorative motion. No explanatory feature-tour paragraphs inside the game interface.
 
-8. DELIVERABLE AND IMPLEMENTATION BOUNDARY
+8. EXPLORATION DELIVERABLES AND SELECTION GATE
 
-Build an editable, interactive prototype, not only a raster mood board. Include moving creeps,
-representative firing/death loops, working controls, Loadout swapping, zoom/pan/recenter, placement
-feedback, tower inspection, and the principal mission states. Scripted representative encounters
-are fine if clearly identified in design notes; do not claim a new combat engine is production code.
+FIRST PASS: six comparable concept packages, clearly labeled N1-N3 and W1-W3.
+For each provide:
+- A short name and rationale explaining the distinct art and interface decisions.
+- Portrait mission views for planning, dense combat, and selected-tower context, using the SAME
+  board layout, tower positions, wave, and sample stats as the other concepts for fair comparison.
+- A five-family tower sheet, a core-creep lineup, a three-of-four Loadout study, and a brief
+  shape-preserving death sequence. Give tower and creep design real attention, not placeholder art.
+- For World One, a short reference-asset interpretation note. Keep asset provenance clear.
 
-Start with the primary mission screen and one concise visual rationale, then develop the tower
-family comparison, creep/death study, and supporting states in the SAME neon direction. A small
-comparison of control arrangements within this direction is fine; no unrelated style gallery.
+Provide a side-by-side overview plus individually inspectable, full-size editable designs.
+Compare layout, tower silhouettes, creep readability, arena treatment, and combat effects. Keep
+each concept coherent, but make it easy for me to choose a HUD from one and towers from another.
+Do not reduce the alternatives to tiny thumbnails, a text-only mood board, or palette swatches.
 
-Target portrait Android at 390x844 and 412x915, and verify the smaller 360x800 layout. Desktop is
+STOP FOR OWNER SELECTION after this comparison. Ask which concepts or individual elements to
+combine/refine. Do not choose a winner yourself or spend the remaining effort polishing a single
+perfect HTML file. Full interaction wiring, production exports, and exhaustive state coverage
+belong to the next pass after I have explored the options.
+
+Use 390x844 as the shared first-pass portrait canvas; show that controls are plausible on a phone.
+For shortlisted designs, verify 412x915 and the smaller 360x800 layout. Desktop is
 a review surface, not a separate dashboard. Provide reachable touch targets, safe-area clearance,
 legible type, color-independent cues, high-contrast and reduced-motion treatments. No clipping,
 overlapping controls, offscreen action buttons, or changing board size when a panel opens.
@@ -233,7 +283,14 @@ SVG/vector masters where appropriate, explicit layers, and reusable tokens/compo
 require Unity, Unreal, Three.js, realistic 3D meshes, or an engine migration. Existing code, if
 provided later, is a mechanics/architecture reference, NOT a design system to preserve.
 
-Export an inspectable HTML prototype or source bundle and a concise handoff README. Include:
+First-pass output may be separate editable canvases/screens with exportable images and optional
+motion studies. Do not force everything into one HTML artifact. If a gallery makes comparison
+easier, keep it lightweight and preserve each concept separately.
+
+AFTER SELECTION, refine the chosen elements into a coherent direction, then build a focused
+interactive prototype where useful: camera/placement, loadout, tower inspection, and representative
+combat/death loops. Scripted encounters are fine if labeled; no production-engine claim is implied.
+Only then prepare an inspectable source/asset handoff with:
 - named reusable HUD components and their states;
 - color/type/spacing/icon tokens and hierarchy;
 - tower and creep vector/shape definitions or exportable assets with consistent pivots/scale;
@@ -241,9 +298,9 @@ Export an inspectable HTML prototype or source bundle and a concise handoff READ
 - motion limits and reduced-motion equivalents;
 - what is implemented in the prototype versus illustrative, proposed, or unresolved.
 
-Success: the screen immediately feels like a crafted neon-space strategy game; the full Loadout is
-understood; towers are recognizable by silhouette and behavior; geometric deaths feel excellent;
-the grid is comfortable to manipulate; and players want to launch/retry rather than navigate menus.
+First-pass success: I have genuinely different neon and reference-informed World One directions
+to explore, compare, and mix, with distinctive HUDs, recognizable tower families, readable geometric
+creeps, and convincing combat/death studies. I can choose what to develop before we invest in polish.
 Do not settle for a stock dashboard, a two-tower demo, or realistic machinery on a gray tiled board.
 ```
 
@@ -251,7 +308,7 @@ Do not settle for a stock dashboard, a two-tower demo, or realistic machinery on
 
 Checked against official documentation on 2026-09-11. Claude Design supports interactive
 prototypes, reference uploads, direct/inline refinement, and HTML or ZIP export with code handoff.
-This makes an animated gameplay prototype a better handoff target than a static screenshot alone.
+These are available formats, not a requirement to finish one HTML prototype before comparing styles.
 [Getting started](https://support.claude.com/en/articles/14604416-get-started-with-claude-design).
 
 Projects may inherit a design system. For this pass, use the game-specific brief rather than
@@ -260,13 +317,15 @@ only relevant source, not credentials, generated API responses, node_modules, or
 Anthropic recommends focused code imports for large projects and documents design-context handoff
 to coding agents. [Prototype workflow](https://academy.claude.com/tutorials/using-claude-design-for-prototypes-and-ux).
 
-The one-direction scope, recovery distinctions, and required game states above are our project
+The exploration-first scope, recovery distinctions, and staged game states above are our project
 decisions, not promises that Claude Design automatically implements game rules or checkpoint storage.
 No Claude account connection, upload, publication, or new image-generation run was performed here.
 
 ## Project Sources
 
-- [Owner reference notes](REFERENCE_GAME_NOTES.md): current art, pacing, and reference preferences.
+- [Owner reference notes](REFERENCE_GAME_NOTES.md): game-reference and pacing preferences recorded
+  on September 11. This September 12 brief supersedes their single-neon-direction restriction;
+  it now requests both neon and uploaded-reference-informed World One variations.
 - [Game Design](../design/GAME_DESIGN.md): Loadout slots, Foundation, development, and economy.
 - [World One](../design/WORLD_ONE.md): current Rail/Siege candidates and creep contracts.
 - [Specialist identities](../adr/0063-give-world-one-specialists-distinct-combat-kits.md): broader Arc/Gravity kits;
