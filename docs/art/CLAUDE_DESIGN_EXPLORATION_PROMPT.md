@@ -4,10 +4,11 @@ Updated: 2026-09-12. Ready for a new Claude Design project; not a production-sty
 This revision supersedes the single-direction, fully interactive HTML target: explore several
 neon and World One variations first, then let the owner select what to develop.
 
-The opening brief below includes the gameplay context. The owner will upload World One reference
-assets alongside it. Use those assets as visual references, not as an automatically approved final
-design. No codebase upload is required. Reference-game screenshots or clips can clarify the four
-specific qualities below without instructing Claude to copy a whole game.
+The opening brief below includes the gameplay context. The World One reference is the written
+design document `docs/design/WORLD_ONE.md`, not a set of reference images. Provide that Markdown
+document alongside this brief; its key visual constraints are also summarized below. No reference
+artwork or full codebase upload is required. Derive original visual interpretations from the Brood
+design rather than assuming an existing approved art style.
 
 ## Opening Brief
 
@@ -17,7 +18,7 @@ Maze Defense, a working-title portrait Android mazing tower-defense game.
 
 Create MULTIPLE distinct visual directions for me to explore before we choose a favorite.
 Start with six concepts: three retro-neon space variations (N1-N3) and three World One variations
-(W1-W3) informed by the reference assets I upload. These should be meaningfully different HUD,
+(W1-W3) informed by the written Brood World design in WORLD_ONE.md. These should be different HUD,
 arena, tower, and creep treatments, not six palette swaps of one layout.
 
 Prioritize breadth, design quality, and easy comparison over perfecting a single HTML prototype.
@@ -69,18 +70,21 @@ Neon track (N1-N3):
 
 World One track (W1-W3):
 - World One is Brood World: an environment under biological or biomechanical infestation.
-  Inspect the uploaded reference assets first. Briefly identify which visual qualities you take
-  from which assets, then offer three different interpretations rather than tracing one image.
-- Let the assets guide terrain motifs, palette, texture, atmosphere, and restrained creep accents.
+  Use WORLD_ONE.md as the reference: it is a game design document, not reference artwork.
+  Briefly identify which written constraints inform each of three original visual interpretations.
+- The document leaves exact location, terrain material, palette, and rendering treatment open.
+  Propose terrain motifs, palette, texture, atmosphere, and restrained creep accents from its
+  biological/biomechanical infestation premise; label these as design proposals, not existing art.
   Vary the HUD composition and tower language too; do not merely replace the neon background.
 - Keep player towers coherent futuristic technology, not biological or medieval structures.
   Brood identity should come chiefly from the arena and enemy treatment.
 - Keep creeps simple and geometrically readable. Stylize organic motifs as clean 2D shapes and
   patterns, not detailed insect anatomy. Preserve shape-matched deaths and mechanical identities.
-- Do not force all World One concepts into neon if the references suggest another treatment.
+- Do not force all World One concepts into neon; the written setting permits other treatments.
   Retain the simple, stylized 2D scope and strong combat readability across both tracks.
-- If the referenced uploads are missing or unreadable, ask me to attach them before designing
-  the World One concepts. You can proceed with neon meanwhile; do not invent their contents.
+- No World One image assets are assumed or required. If WORLD_ONE.md is unavailable, use the
+  summarized setting and mechanics in this brief, noting that the full document was not reviewed.
+  Do not block exploration waiting for art uploads or claim to have inspected nonexistent images.
 
 Shared constraints:
 - Primarily 2D, stylized, and readable. No AAA realism and no detailed modeled machinery.
@@ -259,7 +263,8 @@ For each provide:
   board layout, tower positions, wave, and sample stats as the other concepts for fair comparison.
 - A five-family tower sheet, a core-creep lineup, a three-of-four Loadout study, and a brief
   shape-preserving death sequence. Give tower and creep design real attention, not placeholder art.
-- For World One, a short reference-asset interpretation note. Keep asset provenance clear.
+- For World One, a short note connecting the visual proposal to WORLD_ONE.md, distinguishing
+  written constraints from newly proposed visual choices.
 
 Provide a side-by-side overview plus individually inspectable, full-size editable designs.
 Compare layout, tower silhouettes, creep readability, arena treatment, and combat effects. Keep
@@ -298,7 +303,7 @@ Only then prepare an inspectable source/asset handoff with:
 - motion limits and reduced-motion equivalents;
 - what is implemented in the prototype versus illustrative, proposed, or unresolved.
 
-First-pass success: I have genuinely different neon and reference-informed World One directions
+First-pass success: I have genuinely different neon and design-document-informed World One directions
 to explore, compare, and mix, with distinctive HUDs, recognizable tower families, readable geometric
 creeps, and convincing combat/death studies. I can choose what to develop before we invest in polish.
 Do not settle for a stock dashboard, a two-tower demo, or realistic machinery on a gray tiled board.
@@ -325,9 +330,10 @@ No Claude account connection, upload, publication, or new image-generation run w
 
 - [Owner reference notes](REFERENCE_GAME_NOTES.md): game-reference and pacing preferences recorded
   on September 11. This September 12 brief supersedes their single-neon-direction restriction;
-  it now requests both neon and uploaded-reference-informed World One variations.
+  it now requests both neon and World One variations informed by the written design document.
 - [Game Design](../design/GAME_DESIGN.md): Loadout slots, Foundation, development, and economy.
-- [World One](../design/WORLD_ONE.md): current Rail/Siege candidates and creep contracts.
+- [World One](../design/WORLD_ONE.md): primary written Brood setting and visual contract, plus
+  current Rail/Siege candidates and creep contracts. This is the World One reference, not artwork.
 - [Specialist identities](../adr/0063-give-world-one-specialists-distinct-combat-kits.md): broader Arc/Gravity kits;
   later World One rollout rules take precedence over this older ADR's rollout scope.
 - [Mass and control](../adr/0058-use-visible-mass-and-nonstacking-control.md): nonstacking slows/displacement.
