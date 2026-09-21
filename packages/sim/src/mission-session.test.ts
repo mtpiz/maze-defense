@@ -394,7 +394,7 @@ describe('deterministic Mission Session', () => {
         siege: {
           familyId: 'siege',
           fieldCreditCost: 40,
-          constructionDelayTicks: 0,
+          constructionDelayTicks: 4,
           weapon: {
             mechanicId: 'siege-blast',
             damage: 10,
@@ -404,7 +404,8 @@ describe('deterministic Mission Session', () => {
             targets: { ground: true, air: false },
             targeting: 'first',
             impactDelayTicks: 2,
-            blastRadiusMilliCells: 1_000,
+            // Cover two ticks of forward travel plus the cluster's actual lateral spread.
+            blastRadiusMilliCells: 1_200,
           },
         },
       },
@@ -412,13 +413,13 @@ describe('deterministic Mission Session', () => {
         broodling: {
           ...BENCHMARK_CREEPS.broodling,
           maxHealth: 10,
-          speedMilliCellsPerSecond: 1,
+          speedMilliCellsPerSecond: 15_000,
           fieldCreditBounty: 1,
         },
         glider: {
           ...BENCHMARK_CREEPS.glider,
           maxHealth: 10,
-          speedMilliCellsPerSecond: 1,
+          speedMilliCellsPerSecond: 15_000,
           fieldCreditBounty: 1,
         },
       },
@@ -444,12 +445,12 @@ describe('deterministic Mission Session', () => {
     session.drainPresentationEvents();
     session.dispatch({ type: 'start-wave' });
 
-    session.advance(1);
+    session.advance(4);
     expect(session.getRenderSnapshot().creeps.map(({ health }) => health)).toEqual([10, 10, 10, 10]);
     expect(session.getRenderSnapshot().impacts).toHaveLength(1);
     expect(
       session.drainPresentationEvents().find(({ type }) => type === 'impact-anticipated')?.payload,
-    ).toMatchObject({ mechanicId: 'siege-blast', impactTick: 3 });
+    ).toMatchObject({ mechanicId: 'siege-blast', impactTick: 6 });
 
     session.advance(2);
     const render = session.getRenderSnapshot();

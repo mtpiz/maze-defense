@@ -122,6 +122,10 @@ production never carries both implementations.
 
 ## Phase 2 — First Session, Weeks 5–8
 
+Execution board: [Phase 2 work packets](phase-02/README.md). Astra owns architecture, acceptance
+validation, and integration; bounded implementation is delegated by packet. This board records
+dependencies and evidence without replacing the phase's product goals or declaring Gate 1 passed.
+
 Goal: prove the real opening without production-art multiplication.
 
 ### Product

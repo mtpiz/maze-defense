@@ -60,6 +60,8 @@ export interface WeaponDefinitionBase {
   readonly damage: number;
   readonly armorPiercing: number;
   readonly rangeMilliCells: number;
+  readonly minimumRangeMilliCells?: number;
+  readonly coverageArcMilliDegrees?: number;
   readonly cooldownTicks: number;
   readonly targets: Readonly<Record<MovementLayer, boolean>>;
   readonly targeting: 'first';
@@ -75,6 +77,12 @@ export interface RailWeaponDefinition extends WeaponDefinitionBase {
   readonly maxTargets: number;
 }
 
+export interface ArcChainWeaponDefinition extends WeaponDefinitionBase {
+  readonly mechanicId: 'arc-chain';
+  readonly jumpRangeMilliCells: number;
+  readonly maxTargets: number;
+}
+
 export interface SiegeWeaponDefinition extends WeaponDefinitionBase {
   readonly mechanicId: 'siege-blast';
   readonly impactDelayTicks: number;
@@ -84,6 +92,7 @@ export interface SiegeWeaponDefinition extends WeaponDefinitionBase {
 export type WeaponDefinition =
   | DirectWeaponDefinition
   | RailWeaponDefinition
+  | ArcChainWeaponDefinition
   | SiegeWeaponDefinition;
 
 export interface TowerCombatDefinition {
@@ -139,6 +148,8 @@ export const BENCHMARK_TOWERS: Readonly<
       damage: 4,
       armorPiercing: 0,
       rangeMilliCells: 1_300,
+      minimumRangeMilliCells: 0,
+      coverageArcMilliDegrees: 360_000,
       cooldownTicks: 30,
       targets: Object.freeze({ ground: true, air: false }),
       targeting: 'first',
@@ -180,11 +191,18 @@ export const BENCHMARK_TOWERS: Readonly<
 
 export type BenchmarkCreepId = 'drone' | 'carapace' | 'glider' | 'broodling';
 
+export interface CreepMovementProfile {
+  readonly radiusMilliCells: number;
+  readonly pushResistance: number;
+  readonly pattern: 'swarm' | 'runner' | 'heavy';
+}
+
 export interface CreepDefinition {
   readonly id: BenchmarkCreepId;
   readonly displayName: string;
   readonly layer: MovementLayer;
   readonly mass: number;
+  readonly movement?: CreepMovementProfile;
   readonly mechanicId: string;
   readonly maxHealth: number;
   readonly armor: number;
@@ -201,6 +219,7 @@ export const BENCHMARK_CREEPS: Readonly<Record<BenchmarkCreepId, CreepDefinition
       layer: 'ground',
       mass: 1,
       mechanicId: 'baseline-runner',
+      movement: Object.freeze({ radiusMilliCells: 115, pushResistance: 3, pattern: 'runner' }),
       maxHealth: 24,
       armor: 0,
       speedMilliCellsPerSecond: 1_700,
@@ -213,6 +232,7 @@ export const BENCHMARK_CREEPS: Readonly<Record<BenchmarkCreepId, CreepDefinition
       layer: 'ground',
       mass: 3,
       mechanicId: 'armored-shell',
+      movement: Object.freeze({ radiusMilliCells: 260, pushResistance: 6, pattern: 'heavy' }),
       maxHealth: 90,
       armor: 4,
       speedMilliCellsPerSecond: 900,
@@ -237,6 +257,7 @@ export const BENCHMARK_CREEPS: Readonly<Record<BenchmarkCreepId, CreepDefinition
       layer: 'ground',
       mass: 1,
       mechanicId: 'cluster-rush',
+      movement: Object.freeze({ radiusMilliCells: 80, pushResistance: 1, pattern: 'swarm' }),
       maxHealth: 12,
       armor: 0,
       speedMilliCellsPerSecond: 2_600,

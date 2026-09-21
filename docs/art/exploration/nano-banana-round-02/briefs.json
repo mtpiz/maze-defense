@@ -1,0 +1,158 @@
+{
+  "hud": [
+    {
+      "id": "hud-01",
+      "name": "Industrial Command",
+      "direction": "Tactile industrial command screen: pale concrete arena tiles, graphite machinery, sparse cyan player energy and orange hazard accents. Compact top telemetry strip; three square tower controls at bottom left and one broad launch control bottom right. Beveled metal separators, small stamped numerals, and a restrained perimeter of damaged facility material. Near-orthographic shallow relief, not photorealism. Make the board and bottom command dock feel like one instrument."
+    },
+    {
+      "id": "hud-02",
+      "name": "Survey Table",
+      "direction": "Bright cartographic tactical table, almost white terrain with crisp black topographic contours and sparse green infestation. A very narrow vertical telemetry strip sits outside the board at left; pause and settings are upper right. Under the arena, a right-aligned vertical launch/status pair meets a left horizontal row of three tower icons. Flat diagrammatic machinery, red threats and mineral-green player identifiers. No glow or chunky tile bevels."
+    },
+    {
+      "id": "hud-03",
+      "name": "Arcade Circuit",
+      "direction": "Graphic arcade energy on a near-black physical circuit-board surface. Crisp cyan rail traces, coral threats, yellow planning marks, subtle gray cell dividers; no bloom cloud. A single clean score strip across the top. Bottom controls form three large tactile symbol keys with a thin full-width launch bar immediately below. Sharp geometric tower silhouettes and restrained luminous projectile lines give Geometry Wars-like clarity without copying its assets."
+    },
+    {
+      "id": "hud-04",
+      "name": "Ceramic Outpost",
+      "direction": "Premium white ceramic technology against a quiet gray-green alien field. Dark seams and vermilion enemy organisms, mint weapon cores. Shallow sculpted terrain rather than a wire grid. Top HUD grouped into one thin left statistics ledger and a compact right utility pair. Beneath the board, tower choices are flush square ceramic insets and a separated central launch button occupies the lowest thumb zone. Soft lighting but crisp outlines."
+    },
+    {
+      "id": "hud-05",
+      "name": "Vector Alloy",
+      "direction": "Faceted low-poly alloy towers and flat-shaded cool gray rock, with acid-green systems and saturated red Brood. Thin clipped-corner brackets define the arena without a surrounding panel. The top uses a narrow centered wave meter with lives and credits at opposite ends. A single bottom utility ribbon combines tower symbols, a clear vertical separator, launch arrow, and status; no separate floating buttons. Graphic, angular, disciplined."
+    },
+    {
+      "id": "hud-06",
+      "name": "Field Instrument",
+      "direction": "Rugged scientific field instrument: neutral charcoal casing, silver terrain, white markings, emergency red and sulfur-yellow accents. Three compact gauge-like statistics across the upper edge, with digital values perfectly readable. Below the board, large square tower keys sit left while launch and pause share a clearly separated right-hand column. Stencil-like technical markings and sparse broad machinery shapes; not a military realism simulator."
+    },
+    {
+      "id": "hud-07",
+      "name": "Containment Habitat",
+      "direction": "A shallow cutaway biotech containment floor, pearl-gray walkable plates, small moss-green organic veins at the perimeter, crimson threats and teal machinery. Calm top readout integrated into a narrow architectural lintel. A stepped but compact bottom command shelf puts tower symbols on the upper row, a wide central launch control beneath, and small utility symbols at the outer corners. Organic world versus engineered HUD, clear and restrained."
+    },
+    {
+      "id": "hud-08",
+      "name": "Orbital Minimal",
+      "direction": "Minimal orbital laboratory: snow-white interface, graphite type, pale steel arena with blue-black void visible only at the perimeter, gold objectives and turquoise defenses. Small circular metric indicators at upper corners around a centered wave label. Bottom tower controls spread evenly in a shallow arc, with a centered rectangular launch control below. Extremely economical visual chrome, strong negative space inside cells, clean solid machinery."
+    },
+    {
+      "id": "hud-09",
+      "name": "Signal Print",
+      "direction": "Bold flat screen-printed science fiction: white and charcoal blocks, coral enemy forms and clear green player forms. No gradients, bevels, bloom, or realistic materials. Terrain is a crisp geometric field with lightly stippled hard cells. Typography is assertive but compact. A top rule separates statistics; the lower controls form two unequal bands, tower-choice symbols above a full-width split launch/status strip. Strongest high-contrast editorial direction."
+    },
+    {
+      "id": "hud-10",
+      "name": "Frontier Diorama",
+      "direction": "Stylized miniature frontier battlefield viewed almost straight down: quiet light-gray rock slabs, desaturated vegetation, mint-white machinery and brick-red Brood. Shallow soft shadows give solidity without hiding cells; not glossy toy plastic. A narrow top status banner and an asymmetrical lower command deck: three substantial tower buttons on the left, prominent launch on the right, fine wave-status track below. The landscape carries personality while the HUD stays clean."
+    }
+  ],
+  "siege": [
+    {
+      "id": "siege-01",
+      "name": "Bastion Mortar",
+      "silhouette": "Black-on-white top-down silhouette: broad circular armored body, short offset mortar tube, four compact stabilizer feet; heavy, explosive, unmistakably wider than long. No effects or tiny details."
+    },
+    {
+      "id": "siege-02",
+      "name": "Crater Drum",
+      "silhouette": "Black-on-white top-down silhouette: squat hexagonal drum chassis with a centered thick launch barrel and six blunt radial armor plates. Wide footprint, blunt mass, no effects or tiny details."
+    },
+    {
+      "id": "siege-03",
+      "name": "Anvil Lobber",
+      "silhouette": "Black-on-white top-down silhouette: wide anvil-shaped hull, rear counterweight, and a short forward-angled launcher. Strong asymmetry and dense mass; no effects or tiny details."
+    },
+    {
+      "id": "siege-04",
+      "name": "Tripod Howitzer",
+      "silhouette": "Black-on-white top-down silhouette: broad triangular armored platform with three long sturdy support legs and a central stubby howitzer. Distinct tripod geometry, no effects or tiny details."
+    },
+    {
+      "id": "siege-05",
+      "name": "Shell Foundry",
+      "silhouette": "Black-on-white top-down silhouette: wide rectangular industrial block with a circular loading well and a thick side-mounted launcher. Heavy workshop profile, no effects or tiny details."
+    },
+    {
+      "id": "siege-06",
+      "name": "Rampart Bell",
+      "silhouette": "Black-on-white top-down silhouette: large bell-like armored dome, squared rear housing, and one short central tube. Broad rounded mass with a clear front, no effects or tiny details."
+    },
+    {
+      "id": "siege-07",
+      "name": "Quarry Crawler",
+      "silhouette": "Black-on-white top-down silhouette: wide tracked rectangle, oversized circular turret, and stubby offset cannon. Low, grounded, and visibly heavy; no effects or tiny details."
+    },
+    {
+      "id": "siege-08",
+      "name": "Hexburst Cradle",
+      "silhouette": "Black-on-white top-down silhouette: six-sided cradle holding a thick vertical launcher pod, with two broad side braces. Wide symmetric blast platform, no effects or tiny details."
+    },
+    {
+      "id": "siege-09",
+      "name": "Breakwater Gun",
+      "silhouette": "Black-on-white top-down silhouette: wide crescent shield hull with a compact central bombard tube and two blocky rear anchors. Defensive, broad, explosive; no effects or tiny details."
+    },
+    {
+      "id": "siege-10",
+      "name": "Thunder Sump",
+      "silhouette": "Black-on-white top-down silhouette: broad low oval base, deep central firing cavity, and two thick diagonal recoil arms. Bold readable mass, no effects or tiny details."
+    }
+  ],
+  "rail": [
+    {
+      "id": "rail-01",
+      "name": "Needle Accelerator",
+      "silhouette": "Black-on-white top-down silhouette: extremely long narrow body with a single aligned central rail and tiny rear power block. Precise penetrating accelerator, no effects or tiny details."
+    },
+    {
+      "id": "rail-02",
+      "name": "Twin Spine",
+      "silhouette": "Black-on-white top-down silhouette: two parallel narrow accelerator rails joined by a slim bridge, with a compact rear core. Long, precise, unmistakable, no effects or tiny details."
+    },
+    {
+      "id": "rail-03",
+      "name": "Lance Pod",
+      "silhouette": "Black-on-white top-down silhouette: tapered lance-like chassis, pointed front emitter, and small offset service node at the rear. Sleek penetrating line, no effects or tiny details."
+    },
+    {
+      "id": "rail-04",
+      "name": "Canted Spear",
+      "silhouette": "Black-on-white top-down silhouette: long diagonal spear body with a narrow accelerator groove and a triangular rear brace. Deliberately angled, no effects or tiny details."
+    },
+    {
+      "id": "rail-05",
+      "name": "Monorail Prism",
+      "silhouette": "Black-on-white top-down silhouette: slim diamond-ended prism with one uninterrupted central track and two tiny side clamps. Linear precision, no effects or tiny details."
+    },
+    {
+      "id": "rail-06",
+      "name": "Spine Fork",
+      "silhouette": "Black-on-white top-down silhouette: narrow central spine splitting into two short forward prongs, with a compact rectangular rear core. Distinct forked accelerator, no effects or tiny details."
+    },
+    {
+      "id": "rail-07",
+      "name": "Needle Frame",
+      "silhouette": "Black-on-white top-down silhouette: long open rectangular frame around a single thin firing line, with small end caps. Sparse technical precision, no effects or tiny details."
+    },
+    {
+      "id": "rail-08",
+      "name": "Linear Crown",
+      "silhouette": "Black-on-white top-down silhouette: thin vertical lance with three small crown-like fins at the rear and a pointed emitter. Narrow and exact, no effects or tiny details."
+    },
+    {
+      "id": "rail-09",
+      "name": "Coil Arrow",
+      "silhouette": "Black-on-white top-down silhouette: elongated arrow chassis with two separated rectangular coil blocks around a slim central rail. Penetrating accelerator profile, no effects or tiny details."
+    },
+    {
+      "id": "rail-10",
+      "name": "Survey Beam",
+      "silhouette": "Black-on-white top-down silhouette: long narrow bar with a broad sensor head at one end and a small stabilizer tail. Calm, precise, readable, no effects or tiny details."
+    }
+  ]
+}

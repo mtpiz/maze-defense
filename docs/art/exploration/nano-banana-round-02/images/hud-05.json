@@ -1,0 +1,25 @@
+{
+  "id": "hud-05",
+  "name": "Vector Alloy",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:31:15.449Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163103-hud-05",
+  "usage": {
+    "promptTokenCount": 472,
+    "candidatesTokenCount": 2104,
+    "totalTokenCount": 2576,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 472
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

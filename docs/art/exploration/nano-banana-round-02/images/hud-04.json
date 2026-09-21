@@ -1,0 +1,25 @@
+{
+  "id": "hud-04",
+  "name": "Ceramic Outpost",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:31:03.283Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163050-hud-04",
+  "usage": {
+    "promptTokenCount": 467,
+    "candidatesTokenCount": 2178,
+    "totalTokenCount": 2645,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 467
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

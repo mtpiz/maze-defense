@@ -1,0 +1,25 @@
+{
+  "id": "hud-08",
+  "name": "Orbital Minimal",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:31:55.504Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163142-hud-08",
+  "usage": {
+    "promptTokenCount": 464,
+    "candidatesTokenCount": 2229,
+    "totalTokenCount": 2693,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 464
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

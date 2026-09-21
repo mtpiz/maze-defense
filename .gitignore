@@ -3,6 +3,9 @@ dist/
 dist-types/
 coverage/
 test-results/
+.playwright-mcp/
+artifacts/
+.codex-remote-attachments/
 *.tsbuildinfo
 *.log
 .DS_Store

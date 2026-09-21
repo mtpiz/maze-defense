@@ -1,8 +1,24 @@
 # Visual Direction Track
 
-Status: Parked after Round One; broad exploration resumes after the Core Combat Gate  
-Updated: 2026-09-03  
+Status: Nano Banana HUD/arena and tower exploration generated; awaiting owner selection
+Updated: 2026-09-11
 Decision owner: Product owner
+
+## Current owner direction
+
+On 2026-09-11 the owner requested ten complete HUD/arena directions and Siege/Rail silhouette
+exploration using the V1 project's Nano Banana access. [Round 02](exploration/nano-banana-round-02/README.md)
+contains ten HUD concepts plus ten silhouettes for each family, with an [interactive gallery](exploration/nano-banana-round-02/index.html).
+These are review artifacts only. Production art and HUD implementation remain pending owner selection.
+
+On 2026-09-08 the owner selected Nano Banana for future tower, enemy, and HUD image generation,
+with style exploration continuing until an owner-approved direction is found. The current workstream
+is non-visual engineering. Do not generate more alternatives with another image tool or interpret
+the existing provisional atlas as an approved style. Exploration can begin when the owner chooses;
+the earlier post-Gate scheduling below is a default, not a restriction on that request.
+
+The [provisional imported kit](proxy-kit-v1.md) was generated and integrated before this decision.
+It remains a replaceable pipeline/performance fixture. No production style or HUD redesign is locked.
 
 ## Purpose
 
@@ -38,6 +54,18 @@ when one complete visual Mission is approved before art is multiplied across Wor
 
 ## Approval sequence
 
+### Reference games
+
+Use the documented Infinitode, Geometry Wars, and The Tower reference set during post-Core-Combat
+style design. Collect phone-scale screenshots or footage and annotate the useful hierarchy,
+silhouette, contrast, motion, and feedback decisions before proposing variants. Compare the HUD,
+contextual sheets, dense combat, and results against those references throughout the review.
+The Tower remains a presentation reference, not authority for idle progression or monetization.
+References inform an original futuristic-player-versus-Brood identity; they are not production assets
+to copy or a reason to override the certified gameplay and accessibility contracts.
+
+### Review artifacts
+
 | Gate | Review artifact | Approval question | State |
 |---|---|---|---|
 | 0. Gate input | Proven Foundation/Rail/Siege behavior, Gate creeps, UI information, and density limits | Can representative combat carry intentional visual work? | Await Core Combat Gate |
@@ -45,7 +73,7 @@ when one complete visual Mission is approved before art is multiplied across Wor
 | 2. Narrow exploration | Three controlled variants of the selected or hybrid direction | Which treatment becomes the base? | Pending |
 | 3. Environment kit | Buildable, hard, Spawn, Exit, Waypoint, terrain, and Foundation sheets | Does World One have the right identity and clarity? | Pending |
 | 4. Combat kit | Foundation, Rail, Siege, Gate creeps, attacks, impacts, and deaths; later Arc/Gravity extension | Is combat readable and satisfying? | Pending |
-| 5. Interface family | Claude Design Mission HUD, sheets, World Map, Blueprint, and results screens | Does the product feel cohesive and premium? | Pending |
+| 5. Interface family | Nano Banana-led Mission HUD, sheets, World Map, Blueprint, and results style exploration | Does the product feel cohesive and premium? | Pending owner review |
 | 6. Final style frames | Phone-size build, dense combat, boss, and progression screens | Approve Visual Direction v0.1? | Pending |
 | 7. Live fidelity proof | Approved direction reproduced in one complete Mission | Can the selected renderer deliver it sustainably at the performance target? | Pending |
 
@@ -96,6 +124,7 @@ out of scope for style approval and cannot enter Arena authoring.
 | 2026-08-23 | Restore the original evidence-gate order and make visual exploration non-blocking until Strategy evidence. | Product-owner correction; ADR-0092 |
 | 2026-08-23 | Keep core towers as persistent futuristic Player Technology; make World One the Brood World. | Product-owner correction; ADR-0091 |
 | 2026-09-03 | Resume broad exploration after the Core Combat Gate, but defer production-style lock until Strategy evidence and one approved visual Mission. | Certified adversarial-review resolution |
+| 2026-09-06 | Use the reference games explicitly during the later style-design work while continuing the current engineering repairs. | Product-owner implementation direction |
 
 Product-owner Round One feedback: **Deferred; not required for current implementation.**
 

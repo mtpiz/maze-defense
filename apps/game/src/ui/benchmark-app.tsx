@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'preact/hooks';
 import {
   BenchmarkController,
   type BenchmarkViewState,
@@ -11,35 +11,56 @@ import {
   serializeDiagnosticsReport,
   type EngineGateDiagnosticsSnapshot,
 } from '../platform/engine-gate-diagnostics.js';
+import {
+  BrowserSemanticFeedbackOutput,
+  SemanticFeedback,
+} from '../platform/semantic-feedback.js';
+import type { LocalSettings, LocalSettingsStore } from '../platform/local-settings.js';
+import { copyDiagnosticsReport } from '../platform/copy-diagnostics-report.js';
 
 interface ArenaSurfaceProps {
   readonly controller: BenchmarkController;
-  readonly state: BenchmarkViewState;
+  readonly diagnostics: EngineGateDiagnostics;
+  readonly frameRate: 30 | 60;
   readonly preferences: VisualPreferences;
   readonly onError: (message: string | null) => void;
 }
 
-const ArenaSurface = ({ controller, state, preferences, onError }: ArenaSurfaceProps) => {
+const ArenaSurface = ({ controller, diagnostics, frameRate, preferences, onError }: ArenaSurfaceProps) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<ArenaView | null>(null);
+  const preferencesRef = useRef(preferences);
+  preferencesRef.current = preferences;
 
   useEffect(() => {
     const mount = mountRef.current;
     if (mount === null) return;
-    const view = new ArenaView(mount, (cell) => controller.tapCell(cell));
+    let disposed = false;
+    const view = new ArenaView(mount, (cell) => controller.tapCell(cell), (elapsed) => {
+      diagnostics.recordFrame(elapsed, controller.advanceFrame(elapsed));
+    }, (sample) => diagnostics.recordFrameWork(sample));
     viewRef.current = view;
+    const unsubscribe = controller.subscribe((state) => view.render(state, preferencesRef.current));
     void view.initialize().catch((error: unknown) => {
+      if (disposed) return;
       onError(error instanceof Error ? error.message : 'The Arena renderer could not start.');
     });
     return () => {
+      disposed = true;
+      unsubscribe();
       viewRef.current = null;
       view.destroy();
     };
-  }, [controller, onError]);
+  }, [controller, diagnostics, onError]);
 
   useEffect(() => {
-    viewRef.current?.render(state, preferences);
-  }, [preferences, state]);
+    viewRef.current?.render(controller.getState(), preferences);
+  }, [controller, preferences]);
+
+  useEffect(() => {
+    viewRef.current?.setFrameRate(frameRate);
+    diagnostics.setFrameRate(frameRate);
+  }, [diagnostics, frameRate]);
 
   return <div class="arena-surface" ref={mountRef} />;
 };
@@ -53,7 +74,7 @@ const AccessibleArenaGrid = ({ controller, state }: AccessibleArenaGridProps) =>
   const inactive = new Set(state.render.inactiveCells);
   const terrain = new Map(state.render.terrainCells.map((cell) => [cell.cell, cell]));
   const waypoints = new Map(state.render.waypointCells.map((cell, index) => [cell, index + 1]));
-  const towers = new Set(state.render.towers.map(({ cell }) => cell));
+  const towers = new Map(state.render.towers.map(({ cell, familyId }) => [cell, familyId]));
   const cellCount = state.render.arenaWidth * state.render.arenaHeight;
 
   return (
@@ -75,7 +96,7 @@ const AccessibleArenaGrid = ({ controller, state }: AccessibleArenaGridProps) =>
                 : terrainCell !== undefined && !terrainCell.buildable
                   ? `${terrainCell.terrainId.replaceAll('-', ' ')} terrain, unavailable`
                   : towers.has(cell)
-                    ? 'Foundation tower'
+                    ? `${towers.get(cell)} tower`
                     : 'open build tile';
         return (
           <button
@@ -83,7 +104,7 @@ const AccessibleArenaGrid = ({ controller, state }: AccessibleArenaGridProps) =>
             type="button"
             role="gridcell"
             aria-label={`Row ${row}, column ${column}: ${kind}`}
-            disabled={inactive.has(cell)}
+            disabled={inactive.has(cell) || state.ui.phase === 'victory' || state.ui.phase === 'defeat'}
             onClick={() => controller.tapCell(cell)}
           />
         );
@@ -101,9 +122,9 @@ const phaseLabel = (phase: BenchmarkViewState['ui']['phase']): string => {
     case 'wave':
       return 'Wave active';
     case 'victory':
-      return 'Benchmark clear';
+      return 'Mission clear';
     case 'defeat':
-      return 'Integrity lost';
+      return 'Mission lost';
   }
 };
 
@@ -129,69 +150,93 @@ const formatBytes = (value: number | null): string => {
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const copyWithSelectionFallback = (value: string): boolean => {
-  const textarea = document.createElement('textarea');
-  textarea.value = value;
-  textarea.setAttribute('readonly', '');
-  textarea.style.position = 'fixed';
-  textarea.style.opacity = '0';
-  document.body.appendChild(textarea);
-  textarea.select();
-  try {
-    return document.execCommand('copy');
-  } finally {
-    textarea.remove();
-  }
-};
+interface BenchmarkAppProps {
+  readonly initialSettings: LocalSettings;
+  readonly settingsStore: LocalSettingsStore;
+}
 
-export const BenchmarkApp = () => {
+export const BenchmarkApp = ({ initialSettings, settingsStore }: BenchmarkAppProps) => {
+  const renderStartedAt = performance.now();
   const controller = useMemo(() => new BenchmarkController(), []);
   const diagnostics = useMemo(() => new EngineGateDiagnostics(), []);
+  useLayoutEffect(() => {
+    if (document.visibilityState === 'visible') diagnostics.recordUiCommit(performance.now() - renderStartedAt);
+  });
+  const feedbackOutput = useMemo(() => new BrowserSemanticFeedbackOutput(), []);
+  const semanticFeedback = useMemo(() => new SemanticFeedback(feedbackOutput), [feedbackOutput]);
   const [state, setState] = useState<BenchmarkViewState>(() => controller.getState());
   const [rendererError, setRendererError] = useState<string | null>(null);
-  const [highContrast, setHighContrast] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(
-    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-  );
-  const [showAirRoute, setShowAirRoute] = useState(true);
+  const [settings, setSettings] = useState(initialSettings);
+  const settingsRef = useRef(initialSettings);
+  const { highContrast, reducedMotion, showAirRoute, effectsEnabled, hapticsEnabled, frameRate } = settings;
+  const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
   const [diagnosticsSnapshot, setDiagnosticsSnapshot] =
     useState<EngineGateDiagnosticsSnapshot>(() => diagnostics.snapshot());
   const [diagnosticsExportStatus, setDiagnosticsExportStatus] = useState('');
+  const setSetting = <Key extends keyof LocalSettings>(key: Key, value: LocalSettings[Key]): void => {
+    if (settingsRef.current[key] === value) return;
+    const next = Object.freeze({ ...settingsRef.current, [key]: value });
+    settingsRef.current = next;
+    setSettings(next);
+    if (!next.effectsEnabled) feedbackOutput.stopSound();
+    if (!next.hapticsEnabled) feedbackOutput.stopHaptics();
+    if (key === 'effectsEnabled' && next.effectsEnabled) feedbackOutput.unlock();
+    void settingsStore.save(next).then(
+      () => setSettingsError(null),
+      () => setSettingsError('Settings could not be saved.'),
+    );
+  };
+  const toggleSetting = (key: keyof Omit<LocalSettings, 'frameRate'>): void => {
+    setSetting(key, !settingsRef.current[key]);
+  };
 
   useEffect(
     () =>
       controller.subscribe((nextState) => {
         diagnostics.recordPresentationEvents(nextState.recentEvents);
+        semanticFeedback.consume(
+          nextState.recentEvents,
+          nextState.render.tick,
+          performance.now(),
+          settingsRef.current,
+        );
         setState(nextState);
       }),
-    [controller, diagnostics],
+    [controller, diagnostics, semanticFeedback],
   );
 
   useEffect(() => {
-    let animationFrame = 0;
-    let previousTime = performance.now();
-    const frame = (time: number): void => {
-      const elapsedMilliseconds = time - previousTime;
-      const simulation = controller.advanceFrame(elapsedMilliseconds);
-      diagnostics.recordFrame(elapsedMilliseconds, simulation);
-      previousTime = time;
-      animationFrame = requestAnimationFrame(frame);
+    const unlock = (): void => {
+      if (settingsRef.current.effectsEnabled) feedbackOutput.unlock();
     };
-    animationFrame = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [controller, diagnostics]);
+    window.addEventListener('pointerdown', unlock, true);
+    window.addEventListener('keydown', unlock, true);
+    return () => {
+      window.removeEventListener('pointerdown', unlock, true);
+      window.removeEventListener('keydown', unlock, true);
+      feedbackOutput.dispose();
+    };
+  }, [feedbackOutput]);
 
   useEffect(() => {
-    diagnostics.recordLifecycle(`visibility:${document.visibilityState}`);
-    const onVisibilityChange = (): void => {
-      diagnostics.recordLifecycle(`visibility:${document.visibilityState}`);
+    const updateVisibility = (visible: boolean): void => {
+      diagnostics.recordVisibility(visible);
+      controller.setForeground(visible);
+      if (!visible) {
+        feedbackOutput.stopSound();
+        feedbackOutput.stopHaptics();
+      }
     };
+    const onVisibilityChange = (): void => updateVisibility(document.visibilityState === 'visible');
+    onVisibilityChange();
     const onPageHide = (event: PageTransitionEvent): void => {
+      updateVisibility(false);
       diagnostics.recordLifecycle(`pagehide:${event.persisted ? 'cached' : 'discarded'}`);
     };
     const onPageShow = (event: PageTransitionEvent): void => {
+      onVisibilityChange();
       diagnostics.recordLifecycle(`pageshow:${event.persisted ? 'cached' : 'fresh'}`);
     };
     document.addEventListener('visibilitychange', onVisibilityChange);
@@ -202,7 +247,7 @@ export const BenchmarkApp = () => {
       window.removeEventListener('pagehide', onPageHide);
       window.removeEventListener('pageshow', onPageShow);
     };
-  }, [diagnostics]);
+  }, [controller, diagnostics, feedbackOutput]);
 
   useEffect(() => {
     const sampleMemory = (): void => diagnostics.recordMemory(readJsHeapSample());
@@ -224,6 +269,11 @@ export const BenchmarkApp = () => {
     [highContrast, reducedMotion, showAirRoute],
   );
   const selectedTower = state.render.towers.find(({ id }) => id === state.selectedTowerId);
+  const missionOver = state.ui.phase === 'victory' || state.ui.phase === 'defeat';
+  const resultRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (missionOver) resultRef.current?.focus();
+  }, [missionOver]);
   const waveProgress =
     state.ui.waveCreepCount === 0
       ? 0
@@ -243,29 +293,26 @@ export const BenchmarkApp = () => {
       devicePixelRatio: window.devicePixelRatio,
       visibilityState: document.visibilityState,
       arenaId: state.render.arenaId,
+      combatArt: document.querySelector<HTMLCanvasElement>('canvas.arena-canvas')?.dataset.combatArt ?? 'unavailable',
       simulationVersion: state.render.simulationVersion,
       simulationTick: state.render.tick,
       routeVersion: state.render.routeVersion,
       towerCount: state.render.towers.length,
       phase: state.ui.phase,
+      highContrast,
+      reducedMotion,
+      showAirRoute,
+      effectsEnabled,
+      hapticsEnabled,
+      frameRate,
     });
 
-    try {
-      if (typeof navigator.clipboard?.writeText !== 'function') {
-        if (!copyWithSelectionFallback(report)) throw new Error('Clipboard unavailable');
-      } else {
-        await navigator.clipboard.writeText(report);
-      }
-      setDiagnosticsExportStatus('JSON report copied.');
-    } catch {
-      console.info('Tower Defense v2 Engine Gate report', report);
-      setDiagnosticsExportStatus('Clipboard unavailable. Report written to the device console.');
-    }
+    setDiagnosticsExportStatus(await copyDiagnosticsReport(report));
   };
 
   const resetDiagnostics = (): void => {
     diagnostics.reset();
-    diagnostics.recordLifecycle(`visibility:${document.visibilityState}`);
+    diagnostics.recordVisibility(document.visibilityState === 'visible');
     setDiagnosticsSnapshot(diagnostics.snapshot());
     setDiagnosticsExportStatus('Sample reset.');
   };
@@ -274,11 +321,11 @@ export const BenchmarkApp = () => {
     <main class={`game-shell${highContrast ? ' high-contrast' : ''}`}>
       <header class="mission-hud" aria-label="Mission status">
         <div class="mission-mark">
-          <span class="mission-kicker">W1 · ENGINE GATE</span>
-          <strong>Routing Range</strong>
+          <span class="mission-kicker">Combat trial</span>
+          <strong>Brood Range</strong>
         </div>
         <div class="hud-stat" aria-label={`${state.ui.lives} lives remaining`}>
-          <span>Integrity</span>
+          <span>Lives</span>
           <strong>{state.ui.lives}</strong>
         </div>
         <div class="hud-stat" aria-label={`Wave ${state.ui.waveNumber} of ${state.ui.waveCount}`}>
@@ -295,6 +342,7 @@ export const BenchmarkApp = () => {
           type="button"
           class="hud-button speed-button"
           aria-label={`Simulation speed ${state.ui.speed} times. Tap to change.`}
+          disabled={missionOver}
           onClick={() => controller.cycleSpeed()}
         >
           {state.ui.speed}×
@@ -304,7 +352,7 @@ export const BenchmarkApp = () => {
           class="hud-button icon-button"
           aria-label={state.ui.paused ? 'Resume simulation' : 'Pause simulation'}
           aria-pressed={state.ui.paused}
-          disabled={state.ui.phase !== 'wave'}
+          disabled={state.ui.phase !== 'wave' && state.ui.phase !== 'planning'}
           onClick={() => controller.togglePause()}
         >
           {state.ui.paused ? '▶' : 'Ⅱ'}
@@ -322,26 +370,52 @@ export const BenchmarkApp = () => {
 
       {settingsOpen && (
         <section class="settings-popover" aria-label="Display settings">
+          <fieldset class="frame-rate-setting">
+            <legend>Frame rate</legend>
+            <div class="frame-rate-options">
+              {([30, 60] as const).map((rate) => (
+                <label key={rate} class={`frame-rate-option${frameRate === rate ? ' selected' : ''}`}>
+                  <input type="radio" name="frame-rate" value={rate} checked={frameRate === rate}
+                    onChange={() => setSetting('frameRate', rate)} />
+                  <span>{rate === 30 ? 'Battery' : 'Quality'}<small>{rate} FPS</small></span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <button
             type="button"
             aria-pressed={highContrast}
-            onClick={() => setHighContrast((enabled) => !enabled)}
+            onClick={() => toggleSetting('highContrast')}
           >
             High contrast <span>{highContrast ? 'On' : 'Off'}</span>
           </button>
           <button
             type="button"
             aria-pressed={reducedMotion}
-            onClick={() => setReducedMotion((enabled) => !enabled)}
+            onClick={() => toggleSetting('reducedMotion')}
           >
             Reduced motion <span>{reducedMotion ? 'On' : 'Off'}</span>
           </button>
           <button
             type="button"
             aria-pressed={showAirRoute}
-            onClick={() => setShowAirRoute((enabled) => !enabled)}
+            onClick={() => toggleSetting('showAirRoute')}
           >
             Air route <span>{showAirRoute ? 'On' : 'Off'}</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={effectsEnabled}
+            onClick={() => toggleSetting('effectsEnabled')}
+          >
+            Sound effects <span>{effectsEnabled ? 'On' : 'Off'}</span>
+          </button>
+          <button
+            type="button"
+            aria-pressed={hapticsEnabled}
+            onClick={() => toggleSetting('hapticsEnabled')}
+          >
+            Haptics <span>{hapticsEnabled ? 'On' : 'Off'}</span>
           </button>
           <button
             type="button"
@@ -352,6 +426,7 @@ export const BenchmarkApp = () => {
           >
             Engine diagnostics <span>Open</span>
           </button>
+          {settingsError !== null && <p class="settings-error" role="status">{settingsError}</p>}
         </section>
       )}
 
@@ -381,7 +456,7 @@ export const BenchmarkApp = () => {
               <strong>{formatMilliseconds(diagnosticsSnapshot.frames.p95Milliseconds)}</strong>
             </div>
             <div>
-              <span>20+ ms frames</span>
+              <span>{diagnosticsSnapshot.frames.longFrameThresholdMilliseconds}+ ms frames</span>
               <strong>{diagnosticsSnapshot.frames.longFramePercent.toFixed(1)}%</strong>
             </div>
             <div>
@@ -425,11 +500,12 @@ export const BenchmarkApp = () => {
         </section>
       )}
 
-      <section class="arena-region" aria-label="Benchmark Arena">
+      <section class="arena-region" aria-label="Brood Range Arena">
         {rendererError === null ? (
           <ArenaSurface
             controller={controller}
-            state={state}
+            diagnostics={diagnostics}
+            frameRate={frameRate}
             preferences={preferences}
             onError={setRendererError}
           />
@@ -440,7 +516,34 @@ export const BenchmarkApp = () => {
           </div>
         )}
         <AccessibleArenaGrid controller={controller} state={state} />
-        <div class="phase-chip">{phaseLabel(state.ui.phase)}</div>
+        {!missionOver && (
+          <div class="phase-chip">
+            {state.ui.paused ? 'Paused' : phaseLabel(state.ui.phase)}
+            {state.ui.phase === 'planning' && ` · ${Math.ceil(state.ui.planningTicksRemaining / 30)}s`}
+          </div>
+        )}
+        {missionOver && (
+          <section class="mission-result" aria-label="Mission result" tabIndex={-1} ref={resultRef}>
+            <h1>{state.ui.phase === 'victory' ? 'Mission clear' : 'Mission lost'}</h1>
+            <p>{state.ui.phase === 'victory' ? 'Brood Range secured' : `Wave ${state.ui.waveNumber} · ${state.briefing.title}`}</p>
+            {state.ui.phase === 'victory' && (
+              <div class="result-stars" aria-label={`${state.ui.stars} of 3 Stars`}>
+                {[1, 2, 3].map((star) => <span key={star} class={star <= state.ui.stars ? 'earned' : ''} aria-hidden="true">★</span>)}
+              </div>
+            )}
+            <dl class="result-stats">
+              <div><dt>Lives retained</dt><dd>{state.ui.lives} / {state.ui.startingLives}</dd></div>
+              <div><dt>Waves cleared</dt><dd>{state.ui.completedWaves} / {state.ui.waveCount}</dd></div>
+              <div><dt>Creeps defeated</dt><dd>{state.ui.defeatedCreeps}</dd></div>
+              <div><dt>Creeps leaked</dt><dd>{state.ui.leakedCreeps}</dd></div>
+            </dl>
+            {state.ui.leakedCreeps > 0 && (
+              <p class="leak-summary">
+                Leaks: {Object.entries(state.ui.leaksByFamily).map(([family, count]) => `${family} ${count}`).join(' · ')}
+              </p>
+            )}
+          </section>
+        )}
         {state.ui.phase === 'wave' && (
           <div class="wave-progress" aria-label={`${Math.round(waveProgress)} percent through wave`}>
             <span style={{ width: `${waveProgress}%` }} />
@@ -459,13 +562,27 @@ export const BenchmarkApp = () => {
         </div>
 
         <div class="command-row">
-          {selectedTower === undefined ? (
-            <div class="selection-summary">
-              <span class="tower-glyph" aria-hidden="true" />
-              <div>
-                <strong>Foundation · Level 1</strong>
-                <span>Blocks ground · Airborne ignores towers · weak ground pulse · 10 credits</span>
-              </div>
+          {missionOver ? (
+            <div class="retry-summary">
+              <strong>Opening plan</strong>
+              <span>Same Arena and waves</span>
+            </div>
+          ) : selectedTower === undefined ? (
+            <div class="wave-briefing" aria-label="Wave briefing">
+              <strong>{state.briefing.title}</strong>
+              <ul>
+                {state.briefing.families.map(({ definition, count }) => (
+                  <li key={definition.id}>
+                    <span class={`creep-marker creep-${definition.id}`} aria-hidden="true" />
+                    <span>{count} {definition.displayName}{count === 1 ? '' : 's'}
+                      <small>{definition.layer === 'air' ? 'Airborne' : definition.armor > 0 ? `Ground · Armor ${definition.armor}` : 'Ground'}</small>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <span class="wave-income">
+                {state.ui.guaranteedWaveIncome > 0 ? `Clear allotment +${state.ui.guaranteedWaveIncome}` : 'Final wave'}
+              </span>
             </div>
           ) : (
             <div class="selection-summary">
@@ -475,6 +592,7 @@ export const BenchmarkApp = () => {
                   {selectedTower.familyId.toUpperCase()} · {selectedTower.id.toUpperCase()}
                 </strong>
                 <span>{towerDescription(selectedTower.familyId)}</span>
+                <span class="tower-spec">Damage {selectedTower.weapon.damage} · Range {selectedTower.weapon.rangeMilliCells / 1_000}</span>
               </div>
               <button
                 type="button"
@@ -487,22 +605,28 @@ export const BenchmarkApp = () => {
             </div>
           )}
 
-          {state.ui.phase === 'victory' || state.ui.phase === 'defeat' ? (
-            <button type="button" class="primary-action" onClick={() => controller.retry()}>
-              Retry benchmark
-            </button>
+          {missionOver ? (
+            <div class="retry-actions">
+              <button type="button" class="primary-action" onClick={() => controller.retry()}>
+                Retry opening
+              </button>
+              <button type="button" class="text-button" onClick={() => controller.retry(false)}>
+                Clear plan
+              </button>
+            </div>
           ) : state.ui.phase === 'wave' ? (
             <button type="button" class="primary-action" onClick={() => controller.togglePause()}>
               {state.ui.paused ? 'Resume' : 'Pause'}
             </button>
           ) : (
-            <button type="button" class="primary-action" onClick={() => controller.startWave()}>
-              Launch wave {state.ui.waveNumber}
+            <button type="button" class="primary-action launch-action" disabled={state.ui.paused} onClick={() => controller.startWave()}>
+              {state.ui.phase === 'planning' ? 'Early Launch' : 'Launch wave 1'}
+              {state.ui.phase === 'planning' && <small>+{state.ui.earlyLaunchCredits} credits · {Math.ceil(state.ui.planningTicksRemaining / 30)}s</small>}
             </button>
           )}
         </div>
 
-        {selectedTower !== undefined && (
+        {selectedTower !== undefined && !missionOver && (
           <div class="tower-actions" aria-label="Selected tower actions">
             {selectedTower.familyId === 'foundation' &&
               state.specialistOptions.map((option) => (
@@ -516,7 +640,8 @@ export const BenchmarkApp = () => {
                   }
                   onClick={() => controller.installSelected(option.familyId)}
                 >
-                  Install {option.displayName} · {option.fieldCreditCost}
+                  {option.displayName} · {option.fieldCreditCost}
+                  {option.familyId === 'siege' && <small>Loaned</small>}
                 </button>
               ))}
             <button
@@ -529,6 +654,7 @@ export const BenchmarkApp = () => {
             </button>
           </div>
         )}
+        {!missionOver && selectedTower === undefined && <div class="foundation-price">Foundation · 10 credits</div>}
       </section>
     </main>
   );

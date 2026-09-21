@@ -1,0 +1,25 @@
+{
+  "id": "siege-sheet",
+  "name": "Siege silhouettes",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:32:32.468Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163220-siege-sheet",
+  "usage": {
+    "promptTokenCount": 706,
+    "candidatesTokenCount": 2294,
+    "totalTokenCount": 3000,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 706
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

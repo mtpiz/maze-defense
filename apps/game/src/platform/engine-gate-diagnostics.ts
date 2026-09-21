@@ -1,12 +1,16 @@
 import type { PresentationEvent } from '@tower-defense/sim';
 
 const DEFAULT_SAMPLE_CAPACITY = 3_600;
-const LONG_FRAME_MILLISECONDS = 20;
-const SUSPEND_GAP_MILLISECONDS = 250;
 
 export interface SimulationFrameSample {
   readonly advancedTicks: number;
   readonly simulationMilliseconds: number;
+}
+
+export interface FrameWorkSample {
+  readonly updateMilliseconds: number;
+  readonly sceneMilliseconds: number;
+  readonly renderSubmissionMilliseconds: number;
 }
 
 export interface JsHeapSample {
@@ -32,6 +36,8 @@ export interface DiagnosticsSampleSummary {
 export interface EngineGateDiagnosticsSnapshot {
   readonly sampleDurationMilliseconds: number;
   readonly frames: DiagnosticsSampleSummary & {
+    readonly targetFramesPerSecond: 30 | 60;
+    readonly longFrameThresholdMilliseconds: number;
     readonly estimatedFramesPerSecond: number;
     readonly longFrameCount: number;
     readonly longFramePercent: number;
@@ -40,6 +46,13 @@ export interface EngineGateDiagnosticsSnapshot {
   readonly simulation: DiagnosticsSampleSummary & {
     readonly advancedTicks: number;
   };
+  readonly cpuWork: {
+    readonly frameUpdate: DiagnosticsSampleSummary;
+    readonly scene: DiagnosticsSampleSummary;
+    readonly renderSubmission: DiagnosticsSampleSummary;
+    readonly uiCommit: DiagnosticsSampleSummary;
+  };
+  readonly gpuTiming: 'not-measured';
   readonly presentationEvents: {
     readonly total: number;
     readonly byType: Readonly<Record<string, number>>;
@@ -135,8 +148,15 @@ export class EngineGateDiagnostics {
   readonly #now: () => number;
   readonly #frames: RollingNumbers;
   readonly #simulation: RollingNumbers;
+  readonly #frameUpdate: RollingNumbers;
+  readonly #scene: RollingNumbers;
+  readonly #renderSubmission: RollingNumbers;
+  readonly #uiCommit: RollingNumbers;
   #startedAt: number;
+  #visible = true;
+  #discardNextFrame = false;
   #discardedSuspendGaps = 0;
+  #frameRate: 30 | 60 = 60;
   #advancedTicks = 0;
   #presentationEventCount = 0;
   #presentationEventsByType = new Map<string, number>();
@@ -153,6 +173,10 @@ export class EngineGateDiagnostics {
     this.#now = options.now ?? (() => performance.now());
     this.#frames = new RollingNumbers(capacity);
     this.#simulation = new RollingNumbers(capacity);
+    this.#frameUpdate = new RollingNumbers(capacity);
+    this.#scene = new RollingNumbers(capacity);
+    this.#renderSubmission = new RollingNumbers(capacity);
+    this.#uiCommit = new RollingNumbers(capacity);
     this.#startedAt = this.#now();
   }
 
@@ -161,12 +185,12 @@ export class EngineGateDiagnostics {
     simulation: SimulationFrameSample | null,
   ): void {
     if (!isMeasurement(frameIntervalMilliseconds)) return;
-    if (frameIntervalMilliseconds > SUSPEND_GAP_MILLISECONDS) {
+    if (!this.#visible || this.#discardNextFrame) {
       this.#discardedSuspendGaps += 1;
-      return;
+    } else {
+      this.#frames.push(frameIntervalMilliseconds);
     }
-
-    this.#frames.push(frameIntervalMilliseconds);
+    this.#discardNextFrame = !this.#visible;
 
     if (
       simulation === null ||
@@ -205,6 +229,32 @@ export class EngineGateDiagnostics {
     this.#peakUsedHeapBytes = Math.max(this.#peakUsedHeapBytes ?? 0, sample.usedBytes);
   }
 
+  recordVisibility(visible: boolean): void {
+    this.#visible = visible;
+    // The first resumed interval still includes time spent in the background.
+    if (!visible) this.#discardNextFrame = true;
+    this.recordLifecycle(`visibility:${visible ? 'visible' : 'hidden'}`);
+  }
+
+  recordFrameWork(sample: FrameWorkSample): void {
+    if (!this.#visible || !isMeasurement(sample.updateMilliseconds) || !isMeasurement(sample.sceneMilliseconds)
+      || !isMeasurement(sample.renderSubmissionMilliseconds)) return;
+    this.#frameUpdate.push(sample.updateMilliseconds);
+    this.#scene.push(sample.sceneMilliseconds);
+    this.#renderSubmission.push(sample.renderSubmissionMilliseconds);
+  }
+
+  recordUiCommit(milliseconds: number): void {
+    if (this.#visible && isMeasurement(milliseconds)) this.#uiCommit.push(milliseconds);
+  }
+
+  setFrameRate(frameRate: 30 | 60): void {
+    if (frameRate === this.#frameRate) return;
+    this.#frameRate = frameRate;
+    this.reset();
+    this.recordLifecycle(`frame-rate:${frameRate}`);
+  }
+
   recordLifecycle(type: string): void {
     this.#lifecycle.push(
       Object.freeze({
@@ -219,8 +269,9 @@ export class EngineGateDiagnostics {
     const frameValues = this.#frames.values();
     const frameSummary = summarize(frameValues);
     const simulationSummary = summarize(this.#simulation.values());
+    const longFrameThresholdMilliseconds = 1_200 / this.#frameRate;
     const longFrames = frameValues.filter(
-      (milliseconds) => milliseconds >= LONG_FRAME_MILLISECONDS,
+      (milliseconds) => milliseconds >= longFrameThresholdMilliseconds,
     ).length;
     const framesPerSecond =
       frameSummary.averageMilliseconds === 0
@@ -236,6 +287,8 @@ export class EngineGateDiagnostics {
       sampleDurationMilliseconds: Math.max(0, this.#now() - this.#startedAt),
       frames: Object.freeze({
         ...frameSummary,
+        targetFramesPerSecond: this.#frameRate,
+        longFrameThresholdMilliseconds,
         estimatedFramesPerSecond: framesPerSecond,
         longFrameCount: longFrames,
         longFramePercent:
@@ -248,6 +301,13 @@ export class EngineGateDiagnostics {
         ...simulationSummary,
         advancedTicks: this.#advancedTicks,
       }),
+      cpuWork: Object.freeze({
+        frameUpdate: summarize(this.#frameUpdate.values()),
+        scene: summarize(this.#scene.values()),
+        renderSubmission: summarize(this.#renderSubmission.values()),
+        uiCommit: summarize(this.#uiCommit.values()),
+      }),
+      gpuTiming: 'not-measured',
       presentationEvents: Object.freeze({
         total: this.#presentationEventCount,
         byType: Object.freeze(byType),
@@ -263,6 +323,10 @@ export class EngineGateDiagnostics {
   reset(): void {
     this.#frames.clear();
     this.#simulation.clear();
+    this.#frameUpdate.clear();
+    this.#scene.clear();
+    this.#renderSubmission.clear();
+    this.#uiCommit.clear();
     this.#startedAt = this.#now();
     this.#discardedSuspendGaps = 0;
     this.#advancedTicks = 0;
@@ -298,7 +362,7 @@ export const serializeDiagnosticsReport = (
 ): string =>
   JSON.stringify(
     {
-      schemaVersion: 1,
+      schemaVersion: 3,
       context,
       diagnostics: snapshot,
     },

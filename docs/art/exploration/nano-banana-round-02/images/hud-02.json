@@ -1,0 +1,25 @@
+{
+  "id": "hud-02",
+  "name": "Survey Table",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:30:37.403Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163024-hud-02",
+  "usage": {
+    "promptTokenCount": 470,
+    "candidatesTokenCount": 2193,
+    "totalTokenCount": 2663,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 470
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

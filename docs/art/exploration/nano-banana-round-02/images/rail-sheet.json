@@ -1,0 +1,25 @@
+{
+  "id": "rail-sheet",
+  "name": "Rail silhouettes",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:32:45.280Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163232-rail-sheet",
+  "usage": {
+    "promptTokenCount": 683,
+    "candidatesTokenCount": 2225,
+    "totalTokenCount": 2908,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 683
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

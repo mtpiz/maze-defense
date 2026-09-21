@@ -1,0 +1,25 @@
+{
+  "id": "hud-06",
+  "name": "Field Instrument",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:31:29.049Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163115-hud-06",
+  "usage": {
+    "promptTokenCount": 468,
+    "candidatesTokenCount": 2359,
+    "totalTokenCount": 2827,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 468
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

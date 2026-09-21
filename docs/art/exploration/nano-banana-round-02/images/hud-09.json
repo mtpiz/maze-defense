@@ -1,0 +1,25 @@
+{
+  "id": "hud-09",
+  "name": "Signal Print",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:32:07.798Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163155-hud-09",
+  "usage": {
+    "promptTokenCount": 477,
+    "candidatesTokenCount": 2138,
+    "totalTokenCount": 2615,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 477
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

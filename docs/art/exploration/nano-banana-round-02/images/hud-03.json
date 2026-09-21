@@ -1,0 +1,25 @@
+{
+  "id": "hud-03",
+  "name": "Arcade Circuit",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:30:50.454Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163037-hud-03",
+  "usage": {
+    "promptTokenCount": 469,
+    "candidatesTokenCount": 2291,
+    "totalTokenCount": 2760,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 469
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

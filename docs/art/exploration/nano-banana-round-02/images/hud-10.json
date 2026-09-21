@@ -1,0 +1,25 @@
+{
+  "id": "hud-10",
+  "name": "Frontier Diorama",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:32:19.939Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163207-hud-10",
+  "usage": {
+    "promptTokenCount": 476,
+    "candidatesTokenCount": 2153,
+    "totalTokenCount": 2629,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 476
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}

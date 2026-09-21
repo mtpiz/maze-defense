@@ -16,6 +16,7 @@ export default defineConfig({
   build: {
     target: 'ES2022',
     outDir: 'dist',
+    rollupOptions: { input: { benchmark: fromApp('./index.html'), neon: fromApp('./neon.html') } },
   },
   server: {
     host: '0.0.0.0',

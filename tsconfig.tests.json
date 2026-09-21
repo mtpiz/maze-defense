@@ -3,7 +3,9 @@
   "compilerOptions": {
     "composite": false,
     "declaration": false,
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact",
     "noEmit": true
   },
-  "include": ["packages/**/*.test.ts", "apps/**/*.test.ts"]
+  "include": ["packages/**/*.test.ts", "apps/**/*.test.ts", "apps/game/src/vite-env.d.ts"]
 }

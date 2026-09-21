@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@capacitor/core": "^8.0.0",
+    "@capacitor/preferences": "^8.0.1",
     "@tower-defense/content": "0.0.0",
     "@tower-defense/sim": "0.0.0",
     "@tower-defense/world-01": "0.0.0",
+    "lucide-preact": "^1.45.0",
     "pixi.js": "^8.17.1",
     "preact": "^10.29.0"
   },

@@ -1,0 +1,25 @@
+{
+  "id": "hud-07",
+  "name": "Containment Habitat",
+  "model": "gemini-3.1-flash-image",
+  "generatedAt": "2026-09-11T22:31:42.412Z",
+  "source": "C:\\Users\\mpitt\\Code\\maze-defense\\docs\\art\\exploration\\nano-banana-round-02\\raw\\20260911-163129-hud-07",
+  "usage": {
+    "promptTokenCount": 469,
+    "candidatesTokenCount": 2172,
+    "totalTokenCount": 2641,
+    "promptTokensDetails": [
+      {
+        "modality": "TEXT",
+        "tokenCount": 469
+      }
+    ],
+    "candidatesTokensDetails": [
+      {
+        "modality": "IMAGE",
+        "tokenCount": 1680
+      }
+    ],
+    "serviceTier": "standard"
+  }
+}
