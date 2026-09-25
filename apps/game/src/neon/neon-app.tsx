@@ -29,9 +29,11 @@ interface AimGesture {
 export const TowerIcon = ({ family }: { family: TowerFamilyId }) => (
   <svg class={`tower-icon ${family}`} style={{ color: `#${TOWER_COLORS[family].toString(16).padStart(6, '0')}` }} viewBox="0 0 48 48" aria-hidden="true">
     {family === 'rail' ? <>
-      <path d="m8 28 6-7h20l6 7v10l-9 5H17l-9-5z" fill="currentColor" opacity=".4" />
-      <path d="M12 6h7v30h-7zM29 6h7v30h-7z" fill="currentColor" />
-      <path d="M14 6h3v23h-3zM31 6h3v23h-3zM21 31h6v8h-6z" fill="#eaffff" />
+      <path d="M6 30 15 14.4H33L42 30 33 45.6H15z" fill="#1a5f80" opacity=".8" />
+      <path d="M12 30 18 19.6H30L36 30 30 40.4H18z" fill="#0b2a3a" />
+      <path d="M24 22.3 30.7 26.1V33.9L24 37.7 17.3 33.9V26.1z" fill="#16323d" stroke="currentColor" stroke-width="1.5" />
+      <path d="M20.2 2.5h7.6v29.2h-7.6z" fill="#05080d" stroke="currentColor" stroke-width="1.5" />
+      <path d="M22.1 2.5h3.8v6.9h-3.8zM24 26.6 27 28.3V31.7L24 33.4 21 31.7V28.3z" fill="#eaffff" />
     </> : family === 'siege' ? <>
       <path d="m7 13 17-6 17 6v26H7z" fill="currentColor" opacity=".5" />
       <path d="M5 25h8v16H5zM35 25h8v16h-8zM16 7h16v29H16z" fill="currentColor" />

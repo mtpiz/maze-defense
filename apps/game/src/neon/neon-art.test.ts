@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Graphics } from 'pixi.js';
-import { towerArt } from './neon-art.js';
+import { railMuzzle, towerArt, type TowerArtStage } from './neon-art.js';
 
 type GraphicsCall = { name: string; args: unknown[] };
 
@@ -19,11 +19,15 @@ class GraphicsMock {
   }
 }
 
-const render = (family: 'foundation' | 'rail' | 'siege' | 'arc', leftRecoil = 0, rightRecoil = 0): GraphicsMock => {
+const render = (family: 'foundation' | 'rail' | 'siege' | 'arc', leftRecoil = 0, rightRecoil = 0,
+  stage: TowerArtStage = 1, angle = 0): GraphicsMock => {
   const graphics = new GraphicsMock();
-  towerArt(graphics as unknown as Graphics, family, 0, 0, 0, leftRecoil, rightRecoil);
+  towerArt(graphics as unknown as Graphics, family, 0, 0, angle, leftRecoil, rightRecoil, 1, stage);
   return graphics;
 };
+
+// The Rail pedestal is its ground shadow, six bevel facets, and the flat top face.
+const RAIL_PEDESTAL_POLYS = 8;
 
 const numericArguments = (value: unknown): number[] => {
   if (typeof value === 'number') return [value];
@@ -64,10 +68,46 @@ describe('neon tower art geometry', () => {
     expect(strokes.filter(({ alpha }) => (alpha ?? 1) >= .9)).toHaveLength(0);
   });
 
-  it('moves only the corresponding rail barrel and preserves the other barrel and chassis', () => {
+  it('keeps the Rail pedestal still while the turret turns', () => {
+    const facingRight = polygonPoints(render('rail', 0, 0, 1, 0));
+    const facingDown = polygonPoints(render('rail', 0, 0, 1, Math.PI / 2));
+
+    expect(facingDown.slice(0, RAIL_PEDESTAL_POLYS)).toEqual(facingRight.slice(0, RAIL_PEDESTAL_POLYS));
+    expect(facingDown.slice(RAIL_PEDESTAL_POLYS)).not.toEqual(facingRight.slice(RAIL_PEDESTAL_POLYS));
+  });
+
+  it('recoils the single Rail barrel by the stronger kick and leaves the pedestal and cap in place', () => {
     const base = polygonPoints(render('rail'));
-    const left = polygonPoints(render('rail', 0.24, 0));
-    const right = polygonPoints(render('rail', 0, 0.24));
+    const kicked = polygonPoints(render('rail', 0.1, 0.24));
+    const cap = RAIL_PEDESTAL_POLYS;
+
+    expect(kicked.slice(0, cap + 1)).toEqual(base.slice(0, cap + 1));
+    expectTranslation(kicked.slice(cap + 1, cap + 3), base.slice(cap + 1, cap + 3), -.192, 0);
+    expect(kicked.slice(cap + 3)).toEqual(base.slice(cap + 3));
+  });
+
+  it('draws Rail Level 2 as Level 1 plus lit pedestal seams and guide rails', () => {
+    const level1 = polygonPoints(render('rail'));
+    const level2 = polygonPoints(render('rail', 0, 0, 2));
+    const seams = 6 * 2;
+
+    expect(level2.slice(0, RAIL_PEDESTAL_POLYS)).toEqual(level1.slice(0, RAIL_PEDESTAL_POLYS));
+    expect(level2.slice(RAIL_PEDESTAL_POLYS + seams, RAIL_PEDESTAL_POLYS + seams + 4))
+      .toEqual(level1.slice(RAIL_PEDESTAL_POLYS));
+    expect(level2).toHaveLength(level1.length + seams + 2);
+  });
+
+  it('starts Rail fire at the muzzle of the drawn barrel', () => {
+    expect(railMuzzle(1, 0, 0)).toEqual({ forward: .32 * .8, side: 0 });
+    expect(railMuzzle(1, 1, .17).forward).toBeCloseTo((.32 - .17) * .8, 12);
+    expect(railMuzzle('rapid-fire', 0, 0)).toEqual({ forward: .49 * .8, side: -.15 * .8 });
+    expect(railMuzzle('rapid-fire', 1, 0).side).toBeCloseTo(.15 * .8, 12);
+  });
+
+  it('moves only the corresponding rapid-fire barrel and preserves the other barrel and chassis', () => {
+    const base = polygonPoints(render('rail', 0, 0, 'rapid-fire'));
+    const left = polygonPoints(render('rail', 0.24, 0, 'rapid-fire'));
+    const right = polygonPoints(render('rail', 0, 0.24, 'rapid-fire'));
 
     expect(left.slice(0, 2)).toEqual(base.slice(0, 2));
     expect(left.slice(6, 11)).toEqual(base.slice(6, 11));

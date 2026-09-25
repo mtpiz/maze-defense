@@ -246,3 +246,21 @@ largest pile was 4 bodies and the longest-stacked pair separated within 3.0 s (b
 1.8% stacked, piles of 8, a pair stacked for 22 s).
 Regression tests cover head-on heavies in a one-cell two-way corridor and four random Neon mazes;
 both fail on the previous simulation.
+
+## Rail Level 1 and 2 Art
+
+Updated: 2026-09-25. Owner selection from the Rail workbench exploration: the Level 1 Rail starts
+small and plain so later Levels have room to grow.
+
+- Level 1: a single barrel on a small turret cap, over a hexagonal pedestal. The pedestal stays still
+  while the turret turns. It is a translucent blue (`#1a5f80` at 55% opacity) with six bevel facets
+  lit from the top left, plus its own ground shadow in place of the shared drop shadow.
+- Level 2 keeps the Level 1 silhouette. It adds thin neon seams on the six joins between pedestal
+  facets, and two thin guide rails beside the barrel.
+- The earlier twin-barrel Rail is kept as `'rapid-fire'` art, a candidate for a Level 3 rapid-fire
+  Specialization. Simulation towers have no Levels yet, so every placed Rail draws Level 1.
+- Rail fire now starts at the drawn muzzle. The old tracer origin ignored the 0.8 art scale and began
+  about 0.1 cell ahead of the barrel tip.
+- The Rail radial and console icon matches the Level 1 art.
+
+Presentation only: no simulation, balance, or timing values changed.

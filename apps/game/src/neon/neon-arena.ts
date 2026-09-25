@@ -2,7 +2,7 @@ import { Application, Container, Graphics, Text, Texture, RendererType, type Web
 import type { BenchmarkViewState } from '../application/benchmark-controller.js';
 import type { CreepSnapshot, PresentationEvent } from '@tower-defense/sim';
 import type { TowerFamilyId } from '@tower-defense/content';
-import { CREEP_COLORS, TOWER_COLORS, primitive, towerArt } from './neon-art.js';
+import { CREEP_COLORS, TOWER_COLORS, primitive, railMuzzle, towerArt } from './neon-art.js';
 import { kickBarrel, barrelOffset } from './rail-recoil.js';
 import { eventPoint } from './neon-coordinates.js';
 import { fittedBoard } from './hud-layout.js';
@@ -408,10 +408,10 @@ export class NeonArena {
         fx.circle(x, y, .2).fill({ color, alpha: .2 });
         primitive(fx, 'broodling', x, y, .1, Math.PI/4).fill(core).stroke({ color, width: .035 });
       } else if (p.mechanicId === 'rail-line' && age < 160) {
-        const a = Math.atan2(end.y - from.y, end.x - from.x), side = barrel === 0 ? -.15 : .15;
-        const reach = .49 - (this.reducedMotion ? 0 : barrelOffset(born, this.#time));
-        const muzzle = { x: from.x + Math.cos(a) * reach - Math.sin(a) * side,
-          y: from.y + Math.sin(a) * reach + Math.cos(a) * side };
+        const a = Math.atan2(end.y - from.y, end.x - from.x);
+        const { forward, side } = railMuzzle(1, barrel, this.reducedMotion ? 0 : barrelOffset(born, this.#time));
+        const muzzle = { x: from.x + Math.cos(a) * forward - Math.sin(a) * side,
+          y: from.y + Math.sin(a) * forward + Math.cos(a) * side };
         if (age < 100) {
           const dx = end.x - muzzle.x, dy = end.y - muzzle.y;
           const distance = Math.hypot(dx, dy);
