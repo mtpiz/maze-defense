@@ -8,7 +8,8 @@
 - Batch related polish changes into one implementation pass to avoid repeatedly re-reading the same project context.
 - During routine visual or interaction iterations, run only checks relevant to the changed behavior, plus typecheck, the web build, and one focused browser interaction check.
 - Do not repeat the full test suite, Android emulator boot, broad code review, or multiple screenshot passes after every small visual adjustment.
-- At a roadmap gate, before pushing to `main`, or when changes touch shared simulation contracts, run the full test suite, production build, APK build, and appropriate Android smoke verification.
+- At a roadmap gate, before opening a pull request into `main`, or when changes touch shared simulation contracts, run the full test suite, production build, APK build, and appropriate Android smoke verification. CI repeats the suite on every PR.
+- Never commit or push to `main`. Work on a short-lived `<type>/<short-name>` branch and merge through a pull request with green CI; see `docs/process/GIT_WORKFLOW.md`.
 - Use incremental Gradle builds for requested phone-testing APKs. Building an APK does not require a separate reasoning agent.
 - When the paired physical phone is reachable, use `npm run android:phone` to discover it, build the current Neon bundle, update the app in place, and launch it. Do not give the user an APK link as the default iteration workflow.
 - Delegate bounded implementation packets, genuinely independent investigation, or failure triage.

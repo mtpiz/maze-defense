@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param([string]$DeviceSerial)
+param([string]$DeviceSerial, [switch]$Full)
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
@@ -27,7 +27,12 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Unable to select a physical Android phone.' }
     }
     Write-Output "Deploying to $DeviceSerial"
-    & powershell.exe -NoProfile -File scripts/android-build.ps1 -DeviceSerial $DeviceSerial -Quick
+    # -Full runs the complete verification (npm test, Gradle unit tests, lint) before installing.
+    if ($Full) {
+        & powershell.exe -NoProfile -File scripts/android-build.ps1 -DeviceSerial $DeviceSerial
+    } else {
+        & powershell.exe -NoProfile -File scripts/android-build.ps1 -DeviceSerial $DeviceSerial -Quick
+    }
     if ($LASTEXITCODE -ne 0) { throw "Phone deployment failed with exit code $LASTEXITCODE" }
 } finally {
     Pop-Location

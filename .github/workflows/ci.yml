@@ -1,0 +1,98 @@
+name: CI
+
+# Every pull request into main runs the full suite. Pushes to main re-run it so main's status is
+# always visible. Branch protection (see .github/rulesets/main.json) makes these checks required.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  branch:
+    name: Branch policy
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require a short-lived type/name feature branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^(feat|fix|balance|perf|refactor|test|docs|chore|ci)/[a-z0-9][a-z0-9._-]*$'
+          if [[ ! "$HEAD_REF" =~ $pattern ]]; then
+            echo "::error::Branch '$HEAD_REF' must be named <type>/<short-name>, type one of feat, fix, balance, perf, refactor, test, docs, chore, ci."
+            exit 1
+          fi
+          first=$(git log --reverse --format=%ct "$BASE_SHA..$HEAD_SHA" | head -1)
+          if [[ -n "$first" ]]; then
+            age_days=$(( ( $(date +%s) - first ) / 86400 ))
+            echo "Branch age: ${age_days} day(s)."
+            if (( age_days > 7 )); then
+              echo "::warning::This branch is ${age_days} days old. Keep feature branches short-lived: merge or split it."
+            fi
+          fi
+
+  web:
+    name: Web tests and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - name: Tests (node scripts + vitest)
+        run: npm test
+      - name: Production web build
+        run: npm run build --workspace @tower-defense/game
+
+  android:
+    name: Android tests and APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-36 build-tools;36.0.0
+      - run: npm ci
+      - name: Build web bundle and sync into the native project
+        run: npm run cap:sync:android
+      - name: Gradle unit tests, lint, debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+      - name: Keep the APK and lint report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ github.sha }}
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/reports/lint-results-debug.html
+          if-no-files-found: ignore
+          retention-days: 14

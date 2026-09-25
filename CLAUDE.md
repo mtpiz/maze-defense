@@ -25,6 +25,13 @@ assumptions in the playtest hypothesis register rather than promoting them to AD
 above. Consult it when a design decision is revisited or a Gate is defined. It is challenge material,
 not product authority; its findings influence the current authorities only through deliberate review.
 
+## Git workflow
+
+Follow [Git Workflow and Releases](docs/process/GIT_WORKFLOW.md). Never commit or push to `main`.
+Start every change on a short-lived `<type>/<short-name>` branch from the latest `main` (types: feat,
+fix, balance, perf, refactor, test, docs, chore, ci), push it, and open a pull request. Merge only
+after every CI check passes. Do not push branches the owner has marked as in progress.
+
 ## Commands
 
 Run JavaScript commands from the repository root:

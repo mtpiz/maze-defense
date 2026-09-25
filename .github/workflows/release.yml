@@ -1,0 +1,62 @@
+name: Release to phone
+
+# Publishing a GitHub Release builds the tagged commit on the self-hosted Windows runner that is
+# paired with the phone, runs the full verification (npm test, web build, Gradle unit tests, lint),
+# updates the app on the phone in place, and attaches the exact APK to the release.
+#
+# The runner must be the owner's own machine: it holds the ADB pairing key, the debug signing key the
+# phone's install was made with, and JAVA_HOME / ANDROID_HOME. Setup: docs/process/RELEASES.md.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Tag, branch, or SHA to sideload (manual runs do not attach an APK)
+        required: true
+        default: main
+
+concurrency:
+  group: phone-release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sideload:
+    name: Build, verify, sideload
+    # Only the repository owner can publish releases or dispatch; never run fork code on this machine.
+    if: github.repository_owner == 'mtpiz' && github.actor == 'mtpiz'
+    runs-on: [self-hosted, windows, android-phone]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.ref }}
+      - name: Install dependencies
+        shell: powershell
+        run: npm.cmd ci
+      - name: Stamp versionName from the release tag
+        if: github.event_name == 'release'
+        shell: powershell
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        # versionCode stays fixed so local `npm run android:phone` builds can still update in place.
+        run: |
+          $name = $env:TAG -replace '^v', ''
+          $gradle = 'android/app/build.gradle'
+          (Get-Content -Raw $gradle) -replace 'versionName "[^"]*"', "versionName `"$name`"" | Set-Content -NoNewline $gradle
+          Write-Output "versionName $name"
+      - name: Full verification, build, and install on the phone
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/android-phone.ps1 -Full
+      - name: Attach APK to the release
+        # Also runs when only the phone install failed, so the verified APK is never lost.
+        if: always() && github.event_name == 'release' && hashFiles('artifacts/builds/latest.json') != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            artifacts/builds/maze-defense-debug-*.apk
+            artifacts/builds/latest.json
