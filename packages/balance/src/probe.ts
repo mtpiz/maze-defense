@@ -7,6 +7,7 @@ import {
   type TowerFamilyId,
 } from '@tower-defense/content';
 import { createMission, type WaveGroupDefinition } from '@tower-defense/sim';
+import { measureRouteDwell } from './dwell.js';
 
 /**
  * A standard enemy formation. Density drives splash and pierce value, so every
@@ -93,6 +94,27 @@ export const SERPENTINE_LAYOUT: ProbeLayout = Object.freeze({
 const FIRST_SPAWN_TICK = 90; // after the slowest construction delay
 const TICK_LIMIT = 30 * 60 * 5;
 
+/**
+ * Directional weapons are aimed the way a good player would: at the facing that covers
+ * the most route. Full-circle weapons need no aim.
+ */
+export const bestFacing = (
+  layout: ProbeLayout,
+  weapon: TowerCombatDefinition['weapon'],
+  layer: 'ground' | 'air',
+): number | null => {
+  if ((weapon.coverageArcMilliDegrees ?? 360_000) >= 360_000) return null;
+  const placed = [...layout.wallCells, layout.towerCell].map((cell) => ({ cell, familyId: 'foundation' as const }));
+  let best = 0;
+  let bestCovered = -1;
+  for (let facing = 0; facing < 360_000; facing += 22_500) {
+    const covered = measureRouteDwell(layout.arena, layer, placed,
+      [{ cell: layout.towerCell, weapon, facingMilliDegrees: facing }], 1_000).towers[0]!.coveredMilliCells;
+    if (covered > bestCovered) { best = facing; bestCovered = covered; }
+  }
+  return best;
+};
+
 export const runProbe = (
   catalog: Readonly<Partial<Record<TowerFamilyId, TowerCombatDefinition>>>,
   creeps: Readonly<Partial<Record<BenchmarkCreepId, CreepDefinition>>>,
@@ -129,6 +151,13 @@ export const runProbe = (
   if (familyId !== 'foundation') {
     const install = session.dispatch({ type: 'install-specialist', towerId, familyId });
     if (!install.accepted) throw new Error(`Probe install of ${familyId} rejected: ${install.reason}`);
+  }
+  const weaponForAim = catalog[familyId]!.weapon;
+  const layer = creeps[composition.group.creepId]!.layer;
+  const facing = bestFacing(layout, weaponForAim, layer);
+  if (facing !== null) {
+    const aim = session.dispatch({ type: 'aim-tower', towerId, facingMilliDegrees: facing });
+    if (!aim.accepted) throw new Error(`Probe aim rejected: ${aim.reason}`);
   }
   const credits =
     (catalog.foundation?.fieldCreditCost ?? 0) +

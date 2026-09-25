@@ -10,20 +10,20 @@ export interface BalanceFlag {
   readonly familyId: TowerFamilyId;
   readonly compositionId: string;
   readonly layoutId: string;
-  readonly rule: 'efficiency-outlier' | 'multi-hit-ceiling';
+  readonly rule: 'efficiency-outlier';
   readonly detail: string;
 }
 
 export interface BalanceThresholds {
-  /** Flag a tower whose damage per credit exceeds this multiple of the median capable tower. */
+  /**
+   * Flag a tower whose damage per credit exceeds this multiple of the median capable tower.
+   * Hit counts are reported but never flagged: uncapped AoE is intended for horde defense.
+   */
   readonly maxEfficiencyVsMedian: number;
-  /** Flag any attack that hits more creeps than this. Rail's authored cap is 3. */
-  readonly maxHitsPerAttack: number;
 }
 
 export const DEFAULT_THRESHOLDS: BalanceThresholds = Object.freeze({
   maxEfficiencyVsMedian: 2,
-  maxHitsPerAttack: 6,
 });
 
 const median = (values: readonly number[]): number => {
@@ -55,12 +55,6 @@ export const buildTowerReport = (
         flags.push({
           familyId: row.familyId, compositionId: composition.id, layoutId: layout.id, rule: 'efficiency-outlier',
           detail: `${row.damagePerCredit} dmg/credit is ${(row.damagePerCredit / baseline).toFixed(1)}x the median (${baseline})`,
-        });
-      }
-      if (row.maxHitsPerAttack > thresholds.maxHitsPerAttack) {
-        flags.push({
-          familyId: row.familyId, compositionId: composition.id, layoutId: layout.id, rule: 'multi-hit-ceiling',
-          detail: `one attack hit ${row.maxHitsPerAttack} creeps (mean ${row.meanHitsPerAttack})`,
         });
       }
     }
