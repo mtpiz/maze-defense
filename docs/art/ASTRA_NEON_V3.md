@@ -213,3 +213,36 @@ Final installed APK: `artifacts/builds/maze-defense-debug-105dc2681e62.apk`, SHA
 `105dc2681e62c9aec65bc7d289edf9f947911346849005fd1d33c0eeb918e6ca`. Install and launch succeeded
 on the paired S25+. The read-only live capture used the preceding `d26a7888c21e` build; the final
 renderer-only refinement clears interpolation endpoints on pause/resume and is covered by its test.
+
+## Crowd Liveness Follow-Up
+
+Updated: 2026-09-24. Owner direction: creeps must never form a traffic jam. Strict no-intersection
+contact could deadlock permanently: two Carapaces (0.52-cell bodies) cannot pass head-on in a one-cell
+corridor, and mazes routinely send the route back through the same cells (for example through
+waypoint 02). An undefended Foundation-only probe jammed in 20 of 20 random Neon mazes, 12 of them
+permanently.
+
+Owner clarification: overlap is acceptable when it prevents a jam; enemies must not pile up on top of
+one another. The rules are therefore:
+
+- Oncoming bodies in a true two-way corridor (the route re-enters those cells in the opposite
+  direction) no longer block each other. They still steer to their own side, so light units mostly
+  pass cleanly; heavy pairs visibly squeeze past. The hard "stay out of the oncoming half-lane" rule
+  was removed because it forced swarms into single file.
+- Same-direction bodies and opposite-facing neighbours in separate lanes (tight U-bends) keep hard
+  contact. A pair that already overlaps may move apart or sideways but never deeper.
+- Anti-stacking: every tick, overlapping bodies are eased apart by up to 0.07 cell, the lighter body
+  yielding more and walls bounding every correction. A body that is unsticking is never pushed back;
+  the other body steps aside across the lane, or along it where the lane is too narrow.
+- Liveness guarantee: a Ground body with under 0.1 cell of route progress for 30 ticks unsticks unless
+  it is queued behind a body that is still moving or already unsticking (hard cap 90 ticks). An
+  unsticking body ignores other bodies, and as a last resort steps along the route centre line, until
+  it is 1.5 cells further along and clear. Stall state is part of the creep state and checkpoints.
+
+Simulation version 13. A 120-run probe (Neon and Gate, random mazes, mid-wave rebuilds, no damage)
+cleared every wave; 5.8% of Ground creeps ever unstuck, p99 pause 8 ticks, worst single pause 6.0 s.
+Bodies overlapped in 2.9% of body-ticks and were more than half on top of another in 0.07%; the
+largest pile was 4 bodies and the longest-stacked pair separated within 3.0 s (before anti-stacking:
+1.8% stacked, piles of 8, a pair stacked for 22 s).
+Regression tests cover head-on heavies in a one-cell two-way corridor and four random Neon mazes;
+both fail on the previous simulation.

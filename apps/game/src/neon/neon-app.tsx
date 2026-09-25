@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { Crosshair, Heart, Coins, Pause, Play, Settings2, X, Minus, Plus, RotateCcw,
-  ArrowUpRight, Trash2, Ellipsis, ChevronRight } from 'lucide-preact';
+import { Crosshair, Heart, Hexagon, Skull, Pause, Play, Settings2, X, Minus, Plus, RotateCcw,
+  ArrowUpRight, Trash2, Ellipsis } from 'lucide-preact';
 import type { TowerFamilyId } from '@tower-defense/content';
 import { BenchmarkController } from '../application/benchmark-controller.js';
 import { BuildGesture, PREVIEW_MS, SLOT_POINTS, radialCenter, radialSlot } from './build-gesture.js';
 import { NeonArena } from './neon-arena.js';
 import { NEON_MISSION } from './neon-mission.js';
 import { TOWER_COLORS } from './neon-palette.js';
+import { CreepGlyph, HudDefs, LaunchChevrons, KillBars, MiniRoute, PlateChrome, RailFrame } from './hud-chrome.js';
+import { KillHistory, bandMode, fittedBoard, mazeStats } from './hud-layout.js';
 import { pointerFacingMilliDegrees, shouldBeginTowerAim } from './tower-aim.js';
 
 type Specialist = 'rail' | 'siege' | 'arc';
@@ -64,6 +66,9 @@ export function NeonApp() {
   const settingsButton = useRef<HTMLButtonElement>(null);
   const closeSettings = useRef<HTMLButtonElement>(null);
   const resultButton = useRef<HTMLButtonElement>(null);
+  const kills = useRef(new KillHistory());
+  const openRouteLength = useRef(0);
+  const [surface, setSurface] = useState({ w: 0, h: 0 });
   const selected = state.render.towers.find((t) => t.id === state.selectedTowerId);
   const over = state.ui.phase === 'victory' || state.ui.phase === 'defeat';
 
@@ -116,6 +121,17 @@ export function NeonApp() {
   }
 
   useEffect(() => controller.subscribe((next) => setState(next)), [controller]);
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount || typeof ResizeObserver === 'undefined') return;
+    const read = () => setSurface(prev => prev.w === mount.clientWidth && prev.h === mount.clientHeight ? prev : { w: mount.clientWidth, h: mount.clientHeight });
+    const observer = new ResizeObserver(read);
+    observer.observe(mount); read();
+    return () => observer.disconnect();
+  }, []);
+  function setSpeed(step: 1 | 2 | 3): void {
+    for (let i = 0; i < 2 && controller.getState().ui.speed !== step; i++) controller.cycleSpeed();
+  }
   useEffect(() => {
     if (state.feedback.tone !== 'warning') return;
     setNotice(state.feedback.text);
@@ -275,20 +291,52 @@ export function NeonApp() {
   const progress = completed / Math.max(1, state.ui.waveCreepCount);
 
   const menuAnchor = menu ? view.current?.cellPoint(menu.cell) : null;
+  const waveOpen = state.ui.phase === 'opening' || state.ui.phase === 'planning';
+  const status = state.ui.phase === 'opening' ? 'Ready' : state.ui.phase === 'planning' ? `Next ${Math.ceil(state.ui.planningTicksRemaining / 30)}s`
+    : over ? 'Complete' : state.ui.paused ? 'Paused' : `${state.ui.activeCreeps} active`;
+  if (state.render.towers.length === 0) openRouteLength.current = state.render.groundRoute.length;
+  const maze = mazeStats(state.render.groundRoute, openRouteLength.current);
+  const killRate = useMemo(() => kills.current.record(state.ui.tick, state.ui.defeatedCreeps), [state.ui.tick, state.ui.defeatedCreeps]);
+  const board = fittedBoard(surface.w, surface.h);
+  const bands = surface.w ? bandMode(board.y) : 'hidden';
   return <main class="neon-shell" onKeyDown={key} onPointerDownCapture={(e) => {
     if (e.pointerType === 'touch' && !e.isPrimary && menuRef.current) cancel();
   }}>
-    <div class="neon-hud" aria-label="Mission status">
-      <div class="hud-number life" aria-label={`${state.ui.lives} lives`}><Heart size={17} /><strong>{state.ui.lives}</strong></div>
-      <div class="hud-wave"><span>Wave</span><strong>{String(state.ui.waveNumber).padStart(2, '0')}<small> / {String(state.ui.waveCount).padStart(2, '0')}</small></strong></div>
-      <div class="hud-number credits" aria-label={`${state.ui.fieldCredits} credits`}><Coins size={17} /><strong>{state.ui.fieldCredits}</strong></div>
-      <button class="speed-control" title="Change simulation speed" aria-label={`Speed ${state.ui.speed}x`} disabled={over} onClick={() => controller.cycleSpeed()}>{state.ui.speed}<small>x</small></button>
-      <button class="icon-control" title={state.ui.paused ? 'Resume' : 'Pause'} aria-label={state.ui.paused ? 'Resume' : 'Pause'} disabled={state.ui.phase === 'opening' || over}
-        onClick={() => { cancel(); controller.togglePause(); }}>{state.ui.paused ? <Play size={18} /> : <Pause size={18} />}</button>
-      <button ref={settingsButton} class="icon-control" title="Settings" aria-label="Settings" onClick={() => {
-        cancel(); if (!controller.getState().ui.paused && state.ui.phase !== 'opening' && !over) controller.togglePause(); setSettings(true);
-      }}><Settings2 size={17} /></button>
-    </div>
+    <HudDefs />
+    <header class="neon-hud" aria-label="Mission status">
+      <div class={`hud-module life${state.ui.lives <= state.ui.startingLives / 4 ? ' is-critical' : ''}`} aria-label={`${state.ui.lives} lives`}>
+        <PlateChrome corners={{ tl: 10, br: 10 }} tone="pink" tick tab />
+        <Heart class="hud-icon" size={20} />
+        <div class="hud-stat"><span class="hud-value"><strong>{state.ui.lives}</strong><em>/ {state.ui.startingLives}</em></span><span class="hud-label">Lives</span></div>
+      </div>
+      <div class="hud-module wave" aria-label={`Wave ${state.ui.waveNumber} of ${state.ui.waveCount}`}>
+        <PlateChrome corners={{ tl: 10, br: 10 }} hatch />
+        <Skull class="hud-icon" size={19} />
+        <div class="hud-stat"><span class="hud-value"><strong>{String(state.ui.waveNumber).padStart(2, '0')}</strong><em>/ {String(state.ui.waveCount).padStart(2, '0')}</em></span>
+          <span class="hud-label-row"><span class="hud-label">Wave</span><span class="wave-pips" aria-hidden="true">{Array.from({ length: state.ui.waveCount }, (_, index) =>
+            <i class={index < state.ui.completedWaves ? 'is-done' : index === state.ui.waveNumber - 1 ? 'is-current' : ''} />)}</span></span></div>
+      </div>
+      <div class="hud-module credits" aria-label={`${state.ui.fieldCredits} credits`}>
+        <PlateChrome corners={{ tl: 10, br: 10 }} tick tab />
+        <Hexagon class="hud-icon" size={20} />
+        <div class="hud-stat"><span class="hud-value"><strong>{state.ui.fieldCredits}</strong></span><span class="hud-label">Credits</span></div>
+      </div>
+      <div class="hud-module hud-controls">
+        <PlateChrome corners={{ tl: 10, br: 10 }} />
+        <div class="ctrl-row">
+          <button class="ctrl-button" title={state.ui.paused ? 'Resume' : 'Pause'} aria-label={state.ui.paused ? 'Resume' : 'Pause'} disabled={state.ui.phase === 'opening' || over}
+            onClick={() => { cancel(); controller.togglePause(); }}>{state.ui.paused ? <Play size={15} /> : <Pause size={15} />}</button>
+          <i class="ctrl-divider" />
+          <button ref={settingsButton} class="ctrl-button" title="Settings" aria-label="Settings" onClick={() => {
+            cancel(); if (!controller.getState().ui.paused && state.ui.phase !== 'opening' && !over) controller.togglePause(); setSettings(true);
+          }}><Settings2 size={15} /></button>
+        </div>
+        <div class="speed-seg" role="group" aria-label="Simulation speed">
+          {([1, 2, 3] as const).map(step => <button class={step === state.ui.speed ? 'is-active' : ''} aria-pressed={step === state.ui.speed}
+            aria-label={`Speed ${step}x`} disabled={over} onClick={() => setSpeed(step)}>{step}<small>x</small></button>)}
+        </div>
+      </div>
+    </header>
     <section class="neon-arena-region" aria-label="Neon combat arena">
       <div class="neon-surface" ref={mountRef} tabIndex={0} role="application" aria-label="Arena. Arrow keys choose a cell, Enter builds Foundation, Shift F10 opens upgrades."
         onPointerDown={down} onPointerMove={move} onPointerUp={up}
@@ -296,6 +344,25 @@ export function NeonApp() {
         onLostPointerCapture={(e) => { if (points.current.has(e.pointerId)) { points.current.delete(e.pointerId); cancel(); } }}
         onContextMenu={(e) => e.preventDefault()}
         onWheel={(e) => { e.preventDefault(); cancel(); view.current?.zoomBy(e.deltaY < 0 ? 1.1 : .91); }} />
+      <div class="rail-wrap" aria-hidden="true"><RailFrame /></div>
+      {bands !== 'hidden' && <div class={`hud-band top is-${bands}`} style={{ left: `${board.x}px`, width: `${board.width}px`, height: `${board.y}px` }} aria-hidden="true">
+        <div class="band-widget maze">
+          <PlateChrome corners={{ tl: 7, br: 7 }} inner={false} />
+          {bands === 'full' && <MiniRoute route={state.render.groundRoute} spawn={state.render.spawnCell} exit={state.render.exitCell} />}
+          <div class="bw-text"><span class="hud-label">Maze length</span>
+            <span class="bw-value"><strong>{maze.length}</strong><em>cells</em>{maze.gain !== 0 && <b class={maze.gain > 0 ? 'is-up' : 'is-down'}>{maze.gain > 0 ? '+' : ''}{maze.gain}</b>}</span></div>
+        </div>
+        <span class="band-tag">Sector 01 <b>//</b> {state.briefing.title}</span>
+      </div>}
+      {bands !== 'hidden' && <div class={`hud-band bottom is-${bands}`} style={{ left: `${board.x}px`, width: `${board.width}px`, height: `${board.y}px` }} aria-hidden="true">
+        <span class="band-tag">Defend the exit <b>///</b></span>
+        <div class="band-widget kills">
+          <PlateChrome corners={{ tl: 7, br: 7 }} inner={false} />
+          <div class="bw-text"><span class="hud-label">Kills</span>
+            <span class="bw-value"><strong>{state.ui.defeatedCreeps}</strong>{state.ui.leakedCreeps > 0 && <em class="is-leak">{state.ui.leakedCreeps} leaked</em>}</span></div>
+          {bands === 'full' && <KillBars values={killRate} />}
+        </div>
+      </div>}
       {menu && menuAnchor && <svg class="radial-connector" aria-hidden="true">
         <line x1={menuAnchor.x} y1={menuAnchor.y} x2={menu.x} y2={menu.y} />
         <circle cx={menuAnchor.x} cy={menuAnchor.y} r="5" />
@@ -331,32 +398,50 @@ export function NeonApp() {
       {error && <div class="neon-error" role="alert"><strong>Arena unavailable</strong><p>{error}</p></div>}
       {state.ui.paused && !settings && !over && <button class="pause-overlay" onClick={() => controller.togglePause()}><Play size={22} />Resume</button>}
     </section>
-    <div class="neon-progress" role="progressbar" aria-label="Wave progress" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress * 100}%` }} /></div>
     <footer class={`neon-footer${infoFamily ? ' has-selection' : ''}`}>
-      <div class="context-line">
+      <div class="neon-progress" role="progressbar" aria-label="Wave progress" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress * 100}%` }} /></div>
+      <button class="fit-tab" title="Fit arena" aria-label="Fit arena" onClick={() => { cancel(); view.current?.fit(); }}>
+        <PlateChrome corners={{ tl: 8, bl: 8 }} accents={false} inner={false} /><Crosshair size={16} /></button>
+      <div class="console-panel context-line">
+        <PlateChrome corners={{ tl: 12, br: 12 }} hatch progress={state.ui.phase === 'wave' ? progress : undefined} />
         {infoFamily && infoWeapon ? <>
-          <TowerIcon family={infoFamily} />
-          <div class="tower-readout" title={ROLES[infoFamily]}><strong>{infoFamily}{previewFamily && <small>Preview</small>}</strong>
-            <div class="tower-stats"><span><b>{infoWeapon.damage}</b> DMG</span><span><b>{infoWeapon.rangeMilliCells / 1000}</b> RNG</span><span><b>{(30 / infoWeapon.cooldownTicks).toFixed(1)}</b> /s</span></div>
+          <div class="console-head">
+            <TowerIcon family={infoFamily} />
+            <div class="tower-readout" title={ROLES[infoFamily]}><strong>{infoFamily}{previewFamily && <small>Preview</small>}</strong></div>
+            {!menu && selected && <div class="selection-tools">
+              {selected.familyId === 'foundation' && <button class="icon-control" title="Upgrade Foundation" aria-label="Upgrade Foundation" onClick={() => {
+                const p = view.current?.cellPoint(selected.cell); if (p) openMenu(selected.cell, p.x, p.y, true);
+              }}><Ellipsis size={18} /></button>}
+              <button class="icon-control" title="Dismantle tower" aria-label="Dismantle tower" disabled={!state.ui.canDismantle} onClick={() => controller.dismantleSelected()}><Trash2 size={15} /></button>
+              <button class="icon-control" title="Clear selection" aria-label="Clear selection" onClick={() => { cancel(); controller.clearSelection(); }}><X size={16} /></button>
+            </div>}
           </div>
-          {!menu && selected && <div class="selection-tools">
-            {selected.familyId === 'foundation' && <button class="icon-control" title="Upgrade Foundation" aria-label="Upgrade Foundation" onClick={() => {
-              const p = view.current?.cellPoint(selected.cell); if (p) openMenu(selected.cell, p.x, p.y, true);
-            }}><Ellipsis size={20} /></button>}
-            <button class="icon-control" title="Dismantle tower" aria-label="Dismantle tower" disabled={!state.ui.canDismantle} onClick={() => controller.dismantleSelected()}><Trash2 size={16} /></button>
-            <button class="icon-control" title="Clear selection" aria-label="Clear selection" onClick={() => { cancel(); controller.clearSelection(); }}><X size={17} /></button>
-          </div>}
+          <div class="console-columns tower-stats">
+            <span><b>{infoWeapon.damage}</b><small>Damage</small></span>
+            <span><b>{infoWeapon.rangeMilliCells / 1000}</b><small>Range</small></span>
+            <span><b>{(30 / infoWeapon.cooldownTicks).toFixed(1)}<i>/s</i></b><small>Rate</small></span>
+          </div>
         </> : <>
-          <div class="wave-readout" title={state.briefing.title}><strong>{state.ui.phase === 'opening' ? 'Ready' : state.ui.phase === 'planning' ? `Next ${Math.ceil(state.ui.planningTicksRemaining / 30)}s` : over ? 'Complete' : state.ui.paused ? 'Paused' : `${state.ui.activeCreeps} active`}</strong></div>
-          <div class="threat-icons" aria-label="Wave threats">{state.briefing.families.map(({ definition, count }) => <span title={`${count} ${definition.displayName}`}><i class={`creep-shape ${definition.id}`} /><small>{count}</small></span>)}</div>
+          <div class="console-head wave-readout" title={state.briefing.title}>
+            <span class="hud-label">{waveOpen ? 'Next wave' : 'Wave'} <b>{String(state.ui.waveNumber).padStart(2, '0')}</b></span>
+            <strong class="console-status">{status}</strong>
+          </div>
+          <div class="console-columns threat-icons" aria-label="Wave threats">{state.briefing.families.map(({ definition, count }) =>
+            <span title={`${count} ${definition.displayName}`}><CreepGlyph kind={definition.id} /><b>×{count}</b><small>{definition.displayName}</small></span>)}</div>
         </>}
       </div>
-      <button class="icon-control fit-control" title="Fit arena" aria-label="Fit arena" onClick={() => { cancel(); view.current?.fit(); }}><Crosshair size={17} /></button>
-      {(state.ui.phase === 'opening' || state.ui.phase === 'planning') && <button class="launch-control" disabled={state.ui.paused}
+      {waveOpen ? <button class="launch-control" disabled={state.ui.paused}
         aria-label={state.ui.phase === 'opening' ? 'Launch wave' : 'Launch early'} title={state.ui.phase === 'opening' ? 'Launch wave' : 'Launch early'}
         onClick={() => { cancel(); controller.startWave(); }}>
-        {!infoFamily && <span>Launch</span>}<ChevronRight size={20} />
-      </button>}
+        <PlateChrome corners={{ tl: 12, tr: 12, br: 12, bl: 12 }} tone="gold" hatch />
+        <LaunchChevrons /><span>Launch<em> wave</em></span>
+        {state.ui.phase === 'planning' && state.ui.earlyLaunchCredits > 0 && <small>Early +{state.ui.earlyLaunchCredits}</small>}
+      </button> : <div class="inbound-block">
+        <PlateChrome corners={{ tl: 12, tr: 12, br: 12, bl: 12 }} tone={state.ui.paused ? 'dim' : 'pink'} />
+        <span class="hud-label">{over ? 'Result' : state.ui.paused ? 'Paused' : 'Inbound'}</span>
+        <strong>{state.ui.activeCreeps + Math.max(0, state.ui.waveCreepCount - state.ui.spawnedCreeps)}</strong>
+        <small>Hostiles</small>
+      </div>}
     </footer>
     <span class="sr-only" aria-live="polite">{state.feedback.text}</span>
     {settings && <div class="neon-modal-backdrop" onClick={() => { setSettings(false); settingsButton.current?.focus(); }}>
