@@ -27,8 +27,11 @@ export const GATE_MISSION: MissionDefinition = Object.freeze({
       ...BENCHMARK_TOWERS.siege!,
       weapon: Object.freeze({
         ...BENCHMARK_TOWERS.siege!.weapon,
-        mechanicId: 'siege-blast', damage: 30, rangeMilliCells: 3_500, minimumRangeMilliCells: 1_250,
-        coverageArcMilliDegrees: 90_000, impactDelayTicks: 30, blastRadiusMilliCells: 1_200,
+        // Horde grinder: uncapped AoE, lighter and faster blasts. Two hits kill a Broodling
+        // (28 HP) instead of one. 7 damage (four hits) lost wave 2 in every scripted build,
+        // because the wave economy was tuned around one-shot blasts. See packages/balance.
+        mechanicId: 'siege-blast', damage: 14, cooldownTicks: 45, rangeMilliCells: 3_500, minimumRangeMilliCells: 1_250,
+        coverageArcMilliDegrees: 90_000, impactDelayTicks: 30, blastRadiusMilliCells: 1_000,
       }),
     }),
   }),
