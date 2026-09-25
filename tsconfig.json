@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/content" },
     { "path": "packages/sim" },
+    { "path": "packages/balance" },
     { "path": "packages/testkit" },
     { "path": "apps/game" }
   ]
