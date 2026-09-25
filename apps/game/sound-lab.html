@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Maze Defense Sound Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" />
+<style>
+  :root {
+    color-scheme: dark;
+    --ground: #08090d;
+    --panel: #0e1117;
+    --panel-raised: #141820;
+    --line: #204049;
+    --line-soft: #172027;
+    --text: #dfe7ef;
+    --muted: #8e9aac;
+    --faint: #5f6b7a;
+    --signal: #55eaff;
+    --display: "Chakra Petch", "Segoe UI", Arial, sans-serif;
+    --body: "IBM Plex Sans", "Segoe UI", Arial, sans-serif;
+    --mono: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { background: var(--ground); color: var(--text); }
+  body { margin: 0; font: 400 15px/1.5 var(--body); }
+  .lab { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 40px; }
+  button, input { font: inherit; color: inherit; }
+  button:focus-visible, input:focus-visible { outline: 2px solid #c1faff; outline-offset: 3px; }
+
+  .masthead { display: grid; gap: 20px; }
+  .eyebrow { font: 500 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--signal); }
+  h1 { margin: 0; font: 700 clamp(30px, 6vw, 48px)/1.02 var(--display); letter-spacing: .01em; text-wrap: balance; }
+  .lede { margin: 0; max-width: 62ch; color: var(--muted); }
+
+  .console { border: 1px solid var(--line); border-radius: 4px; background: var(--panel); display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+  .scope-wrap { position: relative; border-right: 1px solid var(--line); min-height: 180px; }
+  #scope { display: block; width: 100%; height: 100%; min-height: 180px; }
+  .scope-label { position: absolute; left: 14px; top: 12px; font: 500 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+  .scope-voices { position: absolute; right: 14px; top: 10px; font: 500 12px/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .scope-voices strong { color: var(--text); font-weight: 500; }
+  .controls { padding: 18px; display: grid; gap: 16px; align-content: start; }
+  .control { display: grid; gap: 6px; }
+  .control label, .toggle { font: 500 11px/1.2 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+  input[type="range"] { width: 100%; accent-color: var(--signal); }
+  input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--signal); }
+  .hint { margin: 0; font-size: 13px; color: var(--faint); }
+
+  .rehearsal { border-top: 1px solid var(--line); grid-column: 1 / -1; padding: 16px 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px; }
+  #rehearse { border: 1px solid var(--signal); background: #0d2a31; color: #c1faff; border-radius: 4px; padding: 10px 16px; font: 600 14px/1 var(--display); letter-spacing: .04em; cursor: pointer; }
+  #rehearse:hover:not(:disabled) { background: #12404a; }
+  #rehearse:disabled { opacity: .5; cursor: default; }
+  .stats { display: flex; flex-wrap: wrap; gap: 8px 24px; margin: 0; }
+  .stats div { display: grid; gap: 2px; }
+  .stats dt { font: 500 10px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+  .stats dd { margin: 0; font: 500 18px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+  .rehearsal p { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--faint); max-width: 80ch; }
+
+  .groups { display: grid; gap: 40px; }
+  .group { display: grid; gap: 16px; }
+  .group header { display: grid; gap: 4px; border-bottom: 1px solid var(--line-soft); padding-bottom: 10px; }
+  .group h2 { margin: 0; font: 600 20px/1.2 var(--display); letter-spacing: .02em; }
+  .group header p { margin: 0; color: var(--muted); font-size: 14px; max-width: 72ch; }
+  .pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+  .pad { --tone: var(--signal); text-align: left; background: var(--panel); border: 1px solid var(--line-soft); border-radius: 4px; padding: 12px; display: grid; gap: 6px; align-content: start; cursor: pointer; transition: border-color .15s, background .15s; }
+  .pad:hover { border-color: color-mix(in srgb, var(--tone) 55%, var(--line)); background: var(--panel-raised); }
+  .pad canvas { width: 100%; height: 44px; display: block; margin-bottom: 4px; opacity: .85; }
+  .pad-name { font: 600 16px/1.2 var(--display); color: var(--tone); }
+  .pad-desc { font-size: 13px; line-height: 1.45; color: var(--muted); }
+  .pad-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 400 11px/1.3 var(--mono); color: var(--faint); font-variant-numeric: tabular-nums; }
+  .pad.hit { animation: hit .5s ease-out; }
+  @keyframes hit { from { box-shadow: 0 0 0 1px var(--tone), 0 0 18px color-mix(in srgb, var(--tone) 40%, transparent); } to { box-shadow: 0 0 0 0 transparent; } }
+
+  .notes { border-top: 1px solid var(--line); padding-top: 20px; display: grid; gap: 8px; color: var(--muted); font-size: 14px; max-width: 76ch; }
+  .notes h2 { margin: 0; font: 600 16px/1.2 var(--display); color: var(--text); }
+  .notes p { margin: 0; }
+  .notes a { color: var(--signal); }
+
+  @media (max-width: 720px) {
+    .console { grid-template-columns: 1fr; }
+    .scope-wrap { border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+  @media (prefers-reduced-motion: reduce) { .pad.hit { animation: none; } }
+</style>
+</head>
+<body>
+<main class="lab">
+  <header class="masthead">
+    <span class="eyebrow">Maze Defense · Audio v0.1 · all procedural</span>
+    <h1>Sound Lab</h1>
+    <p class="lede">Every sound here is synthesized in the browser from code. Nothing is a recording. Tap a pad to hear a cue, turn on the space ambience, or rehearse a full wave to hear how the mix holds up when 60 things happen at once.</p>
+  </header>
+
+  <section class="console" aria-label="Mix console">
+    <div class="scope-wrap">
+      <canvas id="scope" aria-hidden="true"></canvas>
+      <span class="scope-label">Master output</span>
+      <span class="scope-voices">voices <strong id="voices">0</strong> / 16</span>
+    </div>
+    <div class="controls">
+      <div class="control">
+        <label for="volume">Master volume</label>
+        <input id="volume" type="range" min="0" max="100" value="90" />
+      </div>
+      <label class="toggle" for="ambience">Space ambience <input id="ambience" type="checkbox" /></label>
+      <div class="control">
+        <label for="intensity">Combat intensity</label>
+        <input id="intensity" type="range" min="0" max="100" value="0" />
+      </div>
+      <p class="hint">Intensity fades in the low pulsing layer that plays during waves.</p>
+    </div>
+    <div class="rehearsal">
+      <button id="rehearse" type="button">Rehearse a 12-second wave</button>
+      <dl class="stats">
+        <div><dt>Clock</dt><dd id="clock">0.0 s</dd></div>
+        <div><dt>Game events</dt><dd id="emitted">0</dd></div>
+        <div><dt>Sounds played</dt><dd id="played">0</dd></div>
+        <div><dt>Filtered out</dt><dd id="ratio">–</dd></div>
+      </dl>
+      <p>Simulated events at the game's 30 Hz tick: six Foundations, three Rails, two Arcs, a Siege, Broodling swarms, and one leak. They run through the same director the game uses, which merges repeats and enforces each sound's minimum spacing.</p>
+    </div>
+  </section>
+
+  <div id="groups" class="groups"></div>
+
+  <section class="notes">
+    <h2>How these were made</h2>
+    <p>Rail borrows the Star Wars blaster trick: Ben Burtt struck a tensioned radio-tower guy wire, and the cable carried high frequencies faster than low ones, so the hit arrives as a falling "pew." Here that is three detuned sawtooth chirps sweeping from about 4 kHz down to 200 Hz over a metallic ring.</p>
+    <p>The wave alarm and the ambient events are modeled on real plasma-wave recordings from spacecraft: whistlers fall in pitch as lightning energy disperses along magnetic field lines, and "chorus" is a burst of rising chirps from Earth's radiation belts.</p>
+    <p>Each sound is rendered once into a buffer when audio starts, so the game only plays buffers during combat. Total bank size is about 16 seconds of mono audio and costs nothing to download.</p>
+  </section>
+</main>
+<script type="module" src="/src/audio/sound-lab.ts"></script>
+</body>
+</html>

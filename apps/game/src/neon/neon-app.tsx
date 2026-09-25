@@ -3,6 +3,8 @@ import { Crosshair, Heart, Hexagon, Skull, Pause, Play, Settings2, X, Minus, Plu
   ArrowUpRight, Trash2, Ellipsis } from 'lucide-preact';
 import type { TowerFamilyId } from '@tower-defense/content';
 import { BenchmarkController } from '../application/benchmark-controller.js';
+import { AudioDirector } from '../audio/audio-director.js';
+import { GameAudio } from '../audio/game-audio.js';
 import { BuildGesture, PREVIEW_MS, SLOT_POINTS, radialCenter, radialSlot } from './build-gesture.js';
 import { NeonArena } from './neon-arena.js';
 import { NEON_MISSION } from './neon-mission.js';
@@ -52,6 +54,10 @@ export function NeonApp() {
   const menuRef = useRef<Menu | null>(null);
   const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [settings, setSettings] = useState(false);
+  const [soundEffects, setSoundEffects] = useState(true);
+  const [ambience, setAmbience] = useState(true);
+  const audio = useMemo(() => new GameAudio({ effectsEnabled: true, musicEnabled: true }), []);
+  const director = useMemo(() => new AudioDirector(NEON_MISSION.arena.width), []);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState('');
   const mountRef = useRef<HTMLDivElement>(null);
@@ -134,11 +140,24 @@ export function NeonApp() {
   }
   useEffect(() => {
     if (state.feedback.tone !== 'warning') return;
+    audio.play('ui-deny');
     setNotice(state.feedback.text);
     const timer = setTimeout(() => setNotice(''), 2600);
     return () => clearTimeout(timer);
   }, [state.feedback.sequence]);
   useEffect(() => { if (view.current) view.current.reducedMotion = reduced; }, [reduced]);
+  useEffect(() => audio.setPreferences({ effectsEnabled: soundEffects, musicEnabled: ambience }), [soundEffects, ambience]);
+  useEffect(() => {
+    // Browsers only start audio inside a user gesture; the first tap or key press unlocks it.
+    const unlock = () => audio.unlock();
+    window.addEventListener('pointerdown', unlock, true);
+    window.addEventListener('keydown', unlock, true);
+    return () => {
+      window.removeEventListener('pointerdown', unlock, true);
+      window.removeEventListener('keydown', unlock, true);
+      audio.dispose();
+    };
+  }, [audio]);
   useEffect(() => {
     if (settings) closeSettings.current?.focus();
   }, [settings]);
@@ -159,7 +178,11 @@ export function NeonApp() {
     });
     view.current = arena;
     arena.reducedMotion = reduced;
-    const unsubscribe = controller.subscribe((next) => arena.update(next));
+    const unsubscribe = controller.subscribe((next) => {
+      arena.update(next);
+      audio.playAll(director.consume(next.recentEvents, next.render.tick, performance.now()));
+      audio.setIntensity(next.ui.phase === 'wave' && !next.ui.paused ? 1 : 0.2);
+    });
     gesture.current = new BuildGesture({
       tap: (cell) => { setMenu(null); controller.tapCell(cell); },
       hold: (cell, x, y) => openMenu(cell, x, y),
@@ -176,11 +199,11 @@ export function NeonApp() {
     };
     const suspend = () => {
       resetPointers();
-      controller.setForeground(false); arena.setVisible(false);
+      controller.setForeground(false); arena.setVisible(false); audio.setVisible(false);
     };
     const visibility = () => {
       if (document.visibilityState !== 'visible') suspend();
-      else { controller.setForeground(true); arena.setVisible(true); }
+      else { controller.setForeground(true); arena.setVisible(true); audio.setVisible(true); }
     };
     const blur = () => { resetPointers(); controller.setForeground(false); };
     const focus = () => { if (document.visibilityState === 'visible') controller.setForeground(true); };
@@ -454,6 +477,8 @@ export function NeonApp() {
         }
       }}>
         <header><h2>Settings</h2><button ref={closeSettings} class="icon-control" aria-label="Close settings" onClick={() => { setSettings(false); settingsButton.current?.focus(); }}><X size={19} /></button></header>
+        <label class="setting-toggle">Sound effects<input type="checkbox" checked={soundEffects} onChange={(e) => setSoundEffects(e.currentTarget.checked)} /></label>
+        <label class="setting-toggle">Space ambience<input type="checkbox" checked={ambience} onChange={(e) => setAmbience(e.currentTarget.checked)} /></label>
         <label class="setting-toggle">Reduced motion<input type="checkbox" checked={reduced} onChange={(e) => setReduced(e.currentTarget.checked)} /></label>
         <div class="setting-toggle"><span>Camera</span><div class="camera-tools">
           <button title="Zoom out" aria-label="Zoom out" onClick={() => view.current?.zoomBy(.8)}><Minus size={18} /></button>
