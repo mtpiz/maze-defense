@@ -5,6 +5,7 @@ import type { TowerFamilyId } from '@tower-defense/content';
 import { CREEP_COLORS, TOWER_COLORS, primitive, towerArt } from './neon-art.js';
 import { kickBarrel, barrelOffset } from './rail-recoil.js';
 import { eventPoint } from './neon-coordinates.js';
+import { fittedBoard } from './hud-layout.js';
 import { siegeFlightProgress, burstProgress, burstLifetime } from './combat-timing.js';
 import { projectileColors } from './neon-palette.js';
 import { coveragePolygon } from './coverage-shape.js';
@@ -144,8 +145,8 @@ export class NeonArena {
 
   layout(): void {
     const width = this.mount.clientWidth, height = this.mount.clientHeight;
-    const tile = Math.min((width - 8) / 9, (height - 8) / 14);
-    this.#size = { width, height, tile, x: (width - tile * 9) / 2, y: (height - tile * 14) / 2 };
+    const { tile, x, y } = fittedBoard(width, height);
+    this.#size = { width, height, tile, x, y };
     this.applyCamera();
   }
   fit(): void { this.#zoom = 1; this.#pan = { x: 0, y: 0 }; this.applyCamera(); }
@@ -243,6 +244,11 @@ export class NeonArena {
     }
     g.rect(.02, .02, 8.96, 13.96).stroke({ color: 0x00d9d2, width: .14, alpha: .1 });
     g.rect(.02, .02, 8.96, 13.96).stroke({ color: 0x00d9d2, width: .035, alpha: .78 });
+    for (const [cx, cy, dx, dy] of [[0, 0, 1, 1], [9, 0, -1, 1], [0, 14, 1, -1], [9, 14, -1, -1]] as const) {
+      const x = cx - dx * .07, y = cy - dy * .07;
+      g.moveTo(x + dx * .7, y).lineTo(x + dx * .16, y).lineTo(x, y + dy * .16).lineTo(x, y + dy * .7)
+        .stroke({ color: 0x36e2f5, width: .08, alpha: 1, join: 'miter' });
+    }
     for (const cell of state.render.unbuildableCells) {
       if (cell === state.render.spawnCell || cell === state.render.exitCell || state.render.waypointCells.includes(cell)) continue;
       const x = cell % 9, y = Math.floor(cell / 9);

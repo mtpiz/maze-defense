@@ -8,7 +8,8 @@ import type {
   TowerFamilyId,
 } from '@tower-defense/content';
 import { stableHash } from './determinism.js';
-import { findEntrancePosition, movementProfile, moveGroundCrowd, type CrowdBody, type CrowdPoint } from './ground-crowd.js';
+import { PROGRESS_UNSET, UNSTICK_DISTANCE_MILLI, findEntrancePosition, movementProfile, moveGroundCrowd,
+  type CrowdBody, type CrowdPoint } from './ground-crowd.js';
 import {
   inspectPlacement,
   planLayerRoutes,
@@ -22,7 +23,7 @@ import {
   normalizeFacingMilliDegrees,
 } from './tower-coverage.js';
 
-export const SIMULATION_VERSION = 12 as const;
+export const SIMULATION_VERSION = 13 as const;
 export const SIMULATION_TICKS_PER_SECOND = 30 as const;
 const MILLI_CELLS_PER_CELL = 1_000;
 const MOVEMENT_UNITS_PER_CELL = MILLI_CELLS_PER_CELL * SIMULATION_TICKS_PER_SECOND;
@@ -246,6 +247,9 @@ export interface MissionCheckpoint {
 
 export interface CreepCheckpoint extends CreepSnapshot {
   readonly laneMilli: number;
+  readonly stallTicks: number;
+  readonly bestProgressMilli: number;
+  readonly unstickUntilMilli: number;
   readonly routeCells: readonly number[];
   readonly routeCellIndex: number;
   readonly movementUnits: number;
@@ -296,6 +300,9 @@ interface CreepState {
   xMilli: number;
   yMilli: number;
   laneMilli: number;
+  stallTicks: number;
+  bestProgressMilli: number;
+  unstickUntilMilli: number;
 }
 
 interface PendingImpactState extends PendingImpactCheckpoint {}
@@ -823,6 +830,10 @@ class DeterministicMissionSession implements MissionSession {
       if (routeCells === undefined) continue;
       creep.routeCells = routeCells;
       creep.routeCellIndex = 0;
+      // Progress is measured along the new route; an unsticking body keeps unsticking along it.
+      creep.stallTicks = 0;
+      creep.bestProgressMilli = PROGRESS_UNSET;
+      if (creep.unstickUntilMilli > 0) creep.unstickUntilMilli = UNSTICK_DISTANCE_MILLI;
     }
     this.#routeVersion += 1;
     this.#emit('construction', { towerId: tower.id, cell, familyId: tower.familyId });
@@ -1006,6 +1017,9 @@ class DeterministicMissionSession implements MissionSession {
       xMilli: entrance?.point.x ?? this.#definition.arena.spawnCell % this.#definition.arena.width * 1000,
       yMilli: entrance?.point.y ?? Math.floor(this.#definition.arena.spawnCell / this.#definition.arena.width) * 1000,
       laneMilli: entrance?.lane ?? 0,
+      stallTicks: 0,
+      bestProgressMilli: PROGRESS_UNSET,
+      unstickUntilMilli: 0,
     };
     this.#nextCreepSequence += 1;
     this.#creeps.push(creep);
@@ -1045,7 +1059,8 @@ class DeterministicMissionSession implements MissionSession {
     return { id: creep.id, x: creep.xMilli, y: creep.yMilli, radius: profile.radiusMilliCells,
       weight: creep.definition.mass * profile.pushResistance, pattern: profile.pattern,
       speed: creep.definition.speedMilliCellsPerSecond, lane: creep.laneMilli,
-      route: creep.routeCells, routeIndex: creep.routeCellIndex };
+      route: creep.routeCells, routeIndex: creep.routeCellIndex, stallTicks: creep.stallTicks,
+      bestProgress: creep.bestProgressMilli, unstickUntil: creep.unstickUntilMilli };
   }
 
   #crowdBodies(): CrowdBody[] {
@@ -1061,6 +1076,8 @@ class DeterministicMissionSession implements MissionSession {
       const body = byId.get(creep.id);
       if (!body) continue;
       creep.xMilli = body.x; creep.yMilli = body.y;
+      creep.stallTicks = body.stallTicks; creep.bestProgressMilli = body.bestProgress;
+      creep.unstickUntilMilli = body.unstickUntil;
       while (creep.routeCellIndex < body.routeIndex) {
         creep.routeCellIndex++;
         if (creep.routeCells[creep.routeCellIndex] === this.#definition.arena.waypointCells[creep.nextWaypointIndex]) {
@@ -1510,6 +1527,9 @@ class DeterministicMissionSession implements MissionSession {
         return Object.freeze({
           ...snapshot,
           laneMilli: creep.laneMilli,
+          stallTicks: creep.stallTicks,
+          bestProgressMilli: creep.bestProgressMilli,
+          unstickUntilMilli: creep.unstickUntilMilli,
           routeCells: freezeArray(creep.routeCells),
           routeCellIndex: creep.routeCellIndex,
           movementUnits: creep.movementUnits,

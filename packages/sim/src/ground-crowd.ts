@@ -11,7 +11,22 @@ export interface CrowdBody extends CrowdPoint {
   readonly lane: number;
   readonly route: readonly number[];
   routeIndex: number;
+  /** Consecutive ticks without meaningful route progress. */
+  stallTicks: number;
+  /** Furthest route progress (milli-cells) reached since the last reset. */
+  bestProgress: number;
+  /** While positive, the body is unsticking: it ignores other bodies until this route progress. */
+  unstickUntil: number;
 }
+
+/** A Ground body that cannot gain route progress for this long slips past other bodies. */
+export const STALL_LIMIT_TICKS = 30;
+/** Minimum route gain (milli-cells) that counts as progress; the slowest creep covers it in five ticks. */
+export const STALL_PROGRESS_MILLI = 100;
+/** Distance an unsticking body travels before it may collide again (it must also be clear of others). */
+export const UNSTICK_DISTANCE_MILLI = 1_500;
+/** Sentinel for "no progress recorded yet" after spawning or rerouting. */
+export const PROGRESS_UNSET = -1_000_000;
 
 export const movementProfile = (definition: CreepDefinition): CreepMovementProfile =>
   definition.movement ?? { radiusMilliCells: 110, pushResistance: 1, pattern: 'runner' };
@@ -50,6 +65,17 @@ export function fitsCorridor(p: CrowdPoint, radius: number, cells: ReadonlySet<n
   return true;
 }
 
+/** Distance travelled along the ordered route, in milli-cells. Monotonic even where a route doubles back. */
+export function routeProgress(body: CrowdBody, width: number): number {
+  const index = Math.min(body.routeIndex, body.route.length - 1);
+  const from = point(body.route[index]!, width);
+  const toCell = body.route[index + 1];
+  if (toCell === undefined) return index * 1000;
+  const to = point(toCell, width), dx = (to.x - from.x) / 1000, dy = (to.y - from.y) / 1000;
+  const along = (body.x - from.x) * dx + (body.y - from.y) * dy;
+  return index * 1000 + Math.max(0, Math.min(1000, along));
+}
+
 function localCorridor(body: CrowdBody): ReadonlySet<number> {
   return new Set(body.route.slice(Math.max(0, body.routeIndex - 1), body.routeIndex + 3));
 }
@@ -76,6 +102,27 @@ export function moveGroundCrowd(bodies: CrowdBody[], width: number, tick: number
   // Small steps plus swept contact checks prevent fast units from tunneling through a stationary pack.
   const steps = Math.max(1, Math.ceil(Math.max(...bodies.map(b => b.speed)) / 30 / 40));
   const ordered = [...bodies].sort((a, b) => b.weight - a.weight || a.id.localeCompare(b.id));
+  // Oncoming bodies slide past one another: a one-cell corridor cannot fit two heavy bodies abreast, so
+  // hard contact there can only deadlock. They still steer to their own side. Unsticking bodies neither
+  // block nor are blocked by any body; walls still apply to everyone.
+  const direction = (b: CrowdBody): CrowdPoint => {
+    const toCell = b.route[b.routeIndex + 1];
+    if (toCell === undefined) return { x: 0, y: 0 };
+    const from = point(b.route[b.routeIndex]!, width), to = point(toCell, width);
+    return { x: (to.x - from.x) / 1000, y: (to.y - from.y) / 1000 };
+  };
+  const solid = (a: CrowdBody, b: CrowdBody): boolean => {
+    if (a.unstickUntil > 0 || b.unstickUntil > 0) return false;
+    const da = direction(a), db = direction(b);
+    if (da.x * db.x + da.y * db.y >= 0) return true;
+    // Only true two-way corridors (the route re-enters these cells in the opposite direction) let oncoming
+    // bodies pass; opposite-facing neighbours in separate lanes, such as a tight U-bend, still collide.
+    const twoWay = (c: CrowdBody) => {
+      const toCell = c.route[c.routeIndex + 1];
+      return toCell !== undefined && hasCounterflow(c.route, c.route[c.routeIndex]!, toCell);
+    };
+    return !(twoWay(a) || twoWay(b));
+  };
   for (let step = 0; step < steps; step++) {
     const corridors = new Map(bodies.map(b => [b, localCorridor(b)]));
     // A cell-sized spatial hash bounds contact checks to local bodies, even in longer routes.
@@ -108,22 +155,19 @@ export function moveGroundCrowd(bodies: CrowdBody[], width: number, tick: number
         target = { x: body.x + (target.x - body.x) * low, y: body.y + (target.y - body.y) * low };
         if (Math.hypot(target.x - body.x, target.y - body.y) < .01) return false;
       }
-      const from = point(body.route[body.routeIndex]!, width);
-      const toCell = body.route[body.routeIndex + 1];
-      if (bodies.length > 1 && toCell !== undefined && hasCounterflow(body.route, body.route[body.routeIndex]!, toCell)) {
-        const to = point(toCell, width), dx = (to.x - from.x) / 1000, dy = (to.y - from.y) / 1000;
-        const lateral = (body.x - from.x) * -dy + (body.y - from.y) * dx;
-        const nextLateral = (target.x - from.x) * -dy + (target.y - from.y) * dx;
-        // Steering yields before entering the oncoming stream; this is not a collision wall.
-        if (nextLateral > -body.radius - 4 && nextLateral > lateral - .001
-          && (target.x - body.x) * dx + (target.y - body.y) * dy >= 0) return false;
-      }
       const changed = new Map<CrowdBody, CrowdPoint>();
       const move = (b: CrowdBody, p: CrowdPoint, depth: number): boolean => {
         p = { x: quantize(p.x), y: quantize(p.y) };
         if (!fitsCorridor(p, b.radius, corridors.get(b)!, width)) return false;
         for (const other of nearby(p)) {
-          if (other === b) continue;
+          if (other === b || !solid(b, other)) continue;
+          const current = Math.hypot(other.x - b.x, other.y - b.y);
+          if (current < b.radius + other.radius - .001) {
+            // Already overlapping (after passing or unsticking): moving apart or sideways is fine, digging
+            // deeper is not. A hard block here would lock the pair together.
+            if (Math.hypot(other.x - p.x, other.y - p.y) >= current - .001) continue;
+            return false;
+          }
           const vx = p.x - b.x, vy = p.y - b.y, length2 = vx * vx + vy * vy;
           const t = length2 ? Math.max(0, Math.min(1, ((other.x - b.x) * vx + (other.y - b.y) * vy) / length2)) : 0;
           const swept = { x: b.x + vx * t, y: b.y + vy * t };
@@ -157,7 +201,8 @@ export function moveGroundCrowd(bodies: CrowdBody[], width: number, tick: number
       const steeringLimit = counterflow ? 2 : .45;
       let side = Math.max(-steeringLimit, Math.min(steeringLimit, (preferred - lateral) / (counterflow ? 120 : 300)));
       for (const other of nearby(b)) {
-        if (other === b) continue;
+        // Oncoming bodies are still steered around; only the hard block is removed for them.
+        if (other === b || b.unstickUntil > 0 || other.unstickUntil > 0) continue;
         const forward = (other.x - b.x) * dx + (other.y - b.y) * dy;
         const across = (other.x - b.x) * -dy + (other.y - b.y) * dx;
         if (forward > 0 && forward < b.radius + other.radius + 160
@@ -189,9 +234,9 @@ export function moveGroundCrowd(bodies: CrowdBody[], width: number, tick: number
         if (turnLength > 0) desired = { x: b.x + tx / turnLength * distance, y: b.y + ty / turnLength * distance };
       }
       const sideSign = Math.sign(side) || (number % 2 ? 1 : -1);
-      if (!attempt(b, desired, true)) {
+      let advanced = attempt(b, desired, true);
+      if (!advanced) {
         const alternatives = [0, sideSign * .9, -sideSign * .9, sideSign * 2, -sideSign * 2];
-        let advanced = false;
         for (const s of alternatives) {
           const norm = Math.hypot(1, s);
           if (attempt(b, { x: b.x + (dx - dy * s) / norm * distance,
@@ -209,10 +254,122 @@ export function moveGroundCrowd(bodies: CrowdBody[], width: number, tick: number
               y: b.y + (-dy + dx * s) * distance * .5 }, false)) { advanced = true; break; }
           }
         }
-        if (!advanced && reversing) attempt(b, { x: b.x - dx * distance, y: b.y - dy * distance }, false);
+        if (!advanced && reversing) advanced = attempt(b, { x: b.x - dx * distance, y: b.y - dy * distance }, false);
+      }
+      if (!advanced && b.unstickUntil > 0) {
+        // Last resort while unsticking: step along the route centre line, which always lies in open cells.
+        const along = (b.x - from.x) * dx + (b.y - from.y) * dy;
+        const ahead = Math.min(1000, Math.max(0, along) + distance);
+        const tx = from.x + dx * ahead - b.x, ty = from.y + dy * ahead - b.y, gap = Math.hypot(tx, ty);
+        if (gap > .001) {
+          const k = Math.min(1, distance / gap);
+          setPosition(b, { x: quantize(b.x + tx * k), y: quantize(b.y + ty * k) });
+        }
       }
       // Keep ordered route progress even where a path revisits a cell or doubles back.
       if ((b.x - from.x) * dx + (b.y - from.y) * dy >= 1000 - .001) b.routeIndex++;
+    }
+  }
+  separateOverlaps(bodies, width);
+  updateStalls(bodies, width);
+}
+
+/** Largest per-tick correction applied to an overlapping pair, in milli-cells. */
+export const SEPARATION_MILLI_PER_TICK = 70;
+
+/**
+ * Overlap is allowed only as a way through a jam. Every tick, overlapping bodies are eased apart so they
+ * never settle on top of one another: the lighter body yields more, and a body that is unsticking is
+ * never pushed back (the other body makes way). Walls still bound every correction.
+ */
+function separateOverlaps(bodies: readonly CrowdBody[], width: number): void {
+  const ordered = [...bodies].sort((a, b) => a.id.localeCompare(b.id));
+  const corridor = new Map(bodies.map(b => [b, localCorridor(b)]));
+  const nudge = (b: CrowdBody, dx: number, dy: number): boolean => {
+    for (const k of [1, .5, .25]) {
+      const p = { x: quantize(b.x + dx * k), y: quantize(b.y + dy * k) };
+      if (fitsCorridor(p, b.radius, corridor.get(b)!, width)) { b.x = p.x; b.y = p.y; return true; }
+    }
+    return false;
+  };
+  for (let i = 0; i < ordered.length; i++) for (let j = i + 1; j < ordered.length; j++) {
+    const a = ordered[i]!, b = ordered[j]!;
+    const reach = a.radius + b.radius;
+    if (Math.abs(a.x - b.x) >= reach || Math.abs(a.y - b.y) >= reach) continue;
+    let dx = a.x - b.x, dy = a.y - b.y, distance = Math.hypot(dx, dy);
+    const depth = reach - distance;
+    if (depth <= .5) continue;
+    if (distance < 1) {
+      // Exactly stacked: split across the route direction, deterministically by id order.
+      const from = point(a.route[a.routeIndex]!, width), toCell = a.route[a.routeIndex + 1] ?? a.route[a.routeIndex]!;
+      const to = point(toCell, width);
+      dx = -(to.y - from.y) / 1000 || 1; dy = (to.x - from.x) / 1000; distance = Math.hypot(dx, dy) || 1;
+    }
+    const directX = dx / distance, directY = dy / distance;
+    let ux = directX, uy = directY;
+    const total = Math.min(depth, SEPARATION_MILLI_PER_TICK);
+    const aFixed = a.unstickUntil > 0, bFixed = b.unstickUntil > 0;
+    if (aFixed !== bFixed) {
+      // Make way sideways, across the unsticking body's lane, instead of being shoved along it.
+      const mover = aFixed ? a : b;
+      const from = point(mover.route[mover.routeIndex]!, width);
+      const toCell = mover.route[mover.routeIndex + 1] ?? mover.route[mover.routeIndex]!;
+      const to = point(toCell, width), hx = (to.x - from.x) / 1000, hy = (to.y - from.y) / 1000;
+      const side = Math.sign(dx * -hy + dy * hx) || 1; // which side of the mover's lane a sits on
+      ux = -hy * side; uy = hx * side;
+      if (!hx && !hy) { ux = dx / distance; uy = dy / distance; }
+    }
+    const aShare = aFixed && !bFixed ? 0 : bFixed && !aFixed ? 1 : b.weight / (a.weight + b.weight);
+    // If there is no room to step aside (a narrow lane), separate along the line between the bodies.
+    if (aShare > 0 && !nudge(a, ux * total * aShare, uy * total * aShare) && aFixed !== bFixed) {
+      nudge(a, directX * total * aShare, directY * total * aShare);
+    }
+    if (aShare < 1 && !nudge(b, -ux * total * (1 - aShare), -uy * total * (1 - aShare)) && aFixed !== bFixed) {
+      nudge(b, -directX * total * (1 - aShare), -directY * total * (1 - aShare));
+    }
+  }
+}
+
+/**
+ * Liveness guarantee: hard-body contact can deadlock (for example two Carapaces meeting head-on in a
+ * one-cell corridor where a route doubles back). A body that makes no route progress for
+ * STALL_LIMIT_TICKS temporarily stops colliding with other bodies until it is past the jam and clear.
+ */
+function updateStalls(bodies: readonly CrowdBody[], width: number): void {
+  const heading = (b: CrowdBody): CrowdPoint => {
+    const from = point(b.route[b.routeIndex]!, width), to = point(b.route[b.routeIndex + 1]!, width);
+    return { x: (to.x - from.x) / 1000, y: (to.y - from.y) / 1000 };
+  };
+  // A follower waits while the body it is queued behind is still moving or is already clearing the jam.
+  const waitingOnLeader = (b: CrowdBody): boolean => {
+    const { x: dx, y: dy } = heading(b);
+    return bodies.some(other => {
+      if (other === b || other.routeIndex >= other.route.length - 1) return false;
+      if (Math.hypot(other.x - b.x, other.y - b.y) > b.radius + other.radius + 60) return false;
+      const oh = heading(other);
+      // Ahead means in front along b's heading, or already on a later route segment (e.g. round a corner).
+      const ahead = (other.x - b.x) * dx + (other.y - b.y) * dy > 0 || other.routeIndex > b.routeIndex;
+      const oncoming = oh.x * dx + oh.y * dy < 0 && other.routeIndex <= b.routeIndex;
+      return ahead && !oncoming && (other.unstickUntil > 0 || other.stallTicks < b.stallTicks - 1);
+    });
+  };
+  for (const b of bodies) {
+    if (b.routeIndex >= b.route.length - 1) continue;
+    const progress = routeProgress(b, width);
+    if (b.unstickUntil > 0) {
+      if (progress >= b.unstickUntil
+        && bodies.every(other => other === b || !bodiesOverlap(b, b.radius, other, other.radius))) {
+        b.unstickUntil = 0; b.stallTicks = 0; b.bestProgress = progress;
+      }
+      continue;
+    }
+    if (progress >= b.bestProgress + STALL_PROGRESS_MILLI) {
+      b.bestProgress = progress; b.stallTicks = 0;
+      continue;
+    }
+    b.stallTicks++;
+    if (b.stallTicks >= STALL_LIMIT_TICKS && (b.stallTicks >= STALL_LIMIT_TICKS * 3 || !waitingOnLeader(b))) {
+      b.unstickUntil = Math.max(progress, b.bestProgress) + UNSTICK_DISTANCE_MILLI;
     }
   }
 }
