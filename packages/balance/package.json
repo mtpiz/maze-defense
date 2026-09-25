@@ -1,0 +1,12 @@
+{
+  "name": "@tower-defense/balance",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only balance measurement. Never imported by the game app.",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@tower-defense/content": "0.0.0",
+    "@tower-defense/sim": "0.0.0"
+  }
+}
