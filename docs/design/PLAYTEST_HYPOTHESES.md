@@ -1,7 +1,7 @@
 # Playtest Hypothesis Register
 
 Status: Active  
-Updated: 2026-09-05
+Updated: 2026-09-24
 
 This register holds falsifiable expectations, initial tuning ranges, evidence, and failure responses.
 It is intentionally not an ADR collection. A hypothesis may change whenever observation contradicts
@@ -20,6 +20,7 @@ it; the current design contract changes only when the product rule itself change
 | H09 | Approximate two-Star-average World Gates reward engagement without forcing perfection. | Main-path players can advance after some leaks, while three-Star and Mastery rewards still motivate replay. | Tune thresholds and substitute-Star availability. | Open |
 | H10 | Purpose-sized Worlds avoid filler. | Every Mission has a written tactical purpose and playtesters do not identify solved or redundant waves. | Remove or combine content instead of increasing speed or statistics. | Open |
 | H11 | Pixi and Capacitor can deliver the required presentation class on Android. | The Core Combat Gate passes physical-device interaction, performance, and presentation-pipeline tracks after at most one bounded repair. | Switch presentation and native delivery once to Godot using the certified contracts as the port specification. | Open |
+| H12 | Budgeted per-family weapon and Brood death audio improves combat readability over silent hits without becoming fatiguing. | In the Neon comparison, testers can name which tower family is firing by ear, keep ambience and effects on through a full Mission, and do not describe the mix as noisy at 3x speed. | Revert combat to semantic-only cues, raise minimum intervals, or drop Foundation and Broodling layers first. | Open |
 
 ## Initial tuning ranges
 
@@ -139,3 +140,15 @@ reported 59 FPS with a 16.8 ms frame p95. Android `gfxinfo` recorded 605 frames,
 was visually complete at 1080x2400. Host-GPU WebGL logged repeated unbound-texture-unit warnings,
 which remain a physical-device comparison item. Web Audio was available, while an emulator vibration
 request returned false. H05 and H11 remain open pending physical touch, tactile, and device evidence.
+
+### 2026-09-24: Procedural space audio (Neon comparison)
+
+The Neon comparison now has a procedural sound bank (`apps/game/src/audio`): 21 cues plus two
+ambient plasma-wave events, rendered once through `OfflineAudioContext` and played as buffers, and a
+real-time space ambience whose pulse layer follows wave activity. Unlike the benchmark's semantic-only
+contract, towers and Brood deaths make sound, bounded by an `AudioDirector` that plays each sound at
+most once per event batch, enforces per-sound minimum spacing, and caps a batch at six requests, and
+by a 16-voice engine that lets alerts steal from combat. A 12-second rehearsal of six Foundations,
+three Rails, two Arcs, a Siege, and Broodling swarms filtered roughly half of all events. Offline
+renders are click-free with clean tails; perceived balance, fatigue, Android latency, and
+interruption handling are unverified, so H12 is open. Audition page: `sound-lab.html`.

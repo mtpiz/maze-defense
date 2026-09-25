@@ -16,7 +16,7 @@ export default defineConfig({
   build: {
     target: 'ES2022',
     outDir: 'dist',
-    rollupOptions: { input: { benchmark: fromApp('./index.html'), neon: fromApp('./neon.html') } },
+    rollupOptions: { input: { benchmark: fromApp('./index.html'), neon: fromApp('./neon.html'), 'sound-lab': fromApp('./sound-lab.html') } },
   },
   server: {
     host: '0.0.0.0',
