@@ -13,7 +13,7 @@ Run from the repository root on Windows:
 npx.cmd vitest run --config validation/phase-02/vitest.config.ts validation/phase-02/content.acceptance.test.ts
 npx.cmd tsc -p validation/phase-02/tsconfig.json
 
-# P2-02: expected red until the local profile and store are implemented.
+# P2-02: accepted; all 16 cases must pass.
 npx.cmd vitest run --config validation/phase-02/vitest.config.ts validation/phase-02/profile.acceptance.test.ts
 
 # Current shipped behavior: must stay green.
@@ -23,11 +23,12 @@ npm.cmd run typecheck
 
 The validation config has the same workspace aliases as the normal config but an independent test
 include. Never use `--passWithNoTests`. Compiler availability is asserted; missing exports fail.
-Initial red check on 2026-09-21: all 16 acceptance cases were discovered and failed because the compiler
-export is not implemented. This is deliberate pending-feature evidence, not a shipped-game regression.
+Initial red check on 2026-09-21: all 16 acceptance cases were discovered and failed because the profile
+modules were not implemented. This was deliberate pending-feature evidence, not a shipped-game regression.
 P2-01 integration: original cases plus one independently reproduced loan-availability regression now
 pass (17 total). The current compiler and its worker unit tests also pass the normal regression suite.
-P2-02 red check: 16 cases discovered, missing profile implementation; independent test typecheck passed.
+P2-02 integration: 16 acceptance cases pass after independent review and one focused fix round; the
+normal regression suite now includes 18 profile/store unit tests.
 Use targeted normal tests while iterating. Full tests/build/native checks happen at shared-contract
 integration and phase gates, not repeatedly for every documentation or styling change.
 
@@ -37,7 +38,7 @@ integration and phase gates, not repeatedly for every documentation or styling c
 |---|---|---|
 | P2-00 | Four separate verdicts, exact APK/device, explicit unmet targets, approved visual baseline | Evidence checklist in packet |
 | P2-01 | Schema/version, immutable detached output, canonical hash, semantic hash changes, malformed waves/references, bad Arena structure, available loans, simulator compatibility | `validation/phase-02/content.acceptance.test.ts`: 17 passed |
-| P2-02 | Empty store, valid reload, corrupt primary/backup, both corrupt preserved, unknown future version, interrupted write, concurrent writes, quota rejection, bounded native-read failure | `validation/phase-02/profile.acceptance.test.ts` authored, 16 cases |
+| P2-02 | Empty store, valid reload, corrupt primary/backup, both corrupt preserved, unknown future version, interrupted write, concurrent writes, quota rejection, bounded native-read failure | `validation/phase-02/profile.acceptance.test.ts`: 16 passed |
 | P2-03 | M1 no Waypoint/Drone-only, M2 one Waypoint/live build, M3 Rail loan/award, connected unlock order, purposeful waves, deterministic wins/losses, forecast matches groups | Astra authors `missions.acceptance.test.ts` after P2-01 |
 | P2-04 | First boot M1, map after first victory, locked nodes denied, trial loan without ownership, victory unlock once, defeat unlock never, replay no duplicated reward, stars never decrease | Astra authors `campaign.acceptance.test.ts` after P2-02/03 |
 | P2-05 | Opening commands/facing/credits restored, rejected command handling, version/loadout mismatch, restart from completed-wave boundary, no duplicated kills/awards, paused recovery | Astra authors `recovery.acceptance.test.ts` after P2-04 |

@@ -19,7 +19,7 @@ not certification of device performance or permission to multiply art across Wor
 |---|---|---|---|---|
 | [P2-00](P2-00-gate-evidence.md) | Record outstanding Core Combat evidence and verdicts | None | Ready: Astra-led evidence | Astra |
 | [P2-01](P2-01-content-contract.md) | Versioned Mission compiler with stable content identity | None | Accepted: integrated, 17 acceptance checks pass | Terra |
-| [P2-02](P2-02-local-profile.md) | Recoverable, versioned local player profile | None | Ready: 16 acceptance cases authored | Terra |
+| [P2-02](P2-02-local-profile.md) | Recoverable, versioned local player profile | None | Accepted: integrated, 16 acceptance checks pass | Terra |
 | [P2-03](P2-03-opening-missions.md) | Authored M1, M2, and required Rail trial | P2-01 | Blocked | Terra |
 | [P2-04](P2-04-session-flow.md) | Campaign selection, results, and idempotent Rail award | P2-02, P2-03 | Blocked | Terra |
 | [P2-05](P2-05-plan-recovery.md) | Opening-plan retry and between-wave recovery | P2-04 | Blocked | Terra |
@@ -27,8 +27,8 @@ not certification of device performance or permission to multiply art across Wor
 | [P2-07](P2-07-first-session-gate.md) | Build-linked Android and uncoached first-session evidence | P2-00, P2-05, P2-06 | Blocked | Astra |
 
 Ready means the inputs and architect-owned acceptance tests/checklist exist, not that the feature is
-implemented. P2-01 is accepted; P2-02 is the next Ready implementation packet and has not been
-dispatched. P2-03 still needs its architect-owned mission fixtures before dispatch despite its compiler
+implemented. P2-01 and P2-02 are accepted. P2-03 still needs its architect-owned mission fixtures
+before dispatch despite its compiler
 dependency now being met. P2-05/P2-06 can run together after the
 P2-04 interface is integrated. Shared exports, bootstrap, and controller edits are serialized.
 

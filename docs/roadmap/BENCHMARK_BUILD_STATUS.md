@@ -1,7 +1,7 @@
 # Core Combat Gate status
 
 Status: Neon V3 comparison active; original benchmark preserved; Gate remains open
-Updated: 2026-09-21
+Updated: 2026-09-24
 Engine candidate: PixiJS 8 + Preact + Capacitor 8
 
 This is the live evidence log for the revised [Core Combat Gate](SIX_MONTH_PLAN.md#phase-1--core-combat-gate-weeks-14).
@@ -15,9 +15,11 @@ baseline and requested Astra-led architecture with delegated task packets. The
 [Phase 2 work board](phase-02/README.md) now tracks eight bounded packets and architect-owned
 acceptance checks. The Mission compiler packet was implemented by Euclid (Terra medium) in an isolated
 worktree, reviewed by Astra, and integrated after correcting loan validation, source types, and unit-test
-typing. Its 17 independent acceptance checks and 258 normal regression tests passed. The local-profile
-packet now has a frozen API and 16 architect-owned failure-injection
-cases and is ready, but is not dispatched in this round. Later implementation packets require their
+typing. Its 17 independent acceptance checks passed. The local-profile packet was implemented by Nash
+(Terra medium), rejected once in review for reload/write races and recovery edge cases, corrected, and
+accepted with 16/16 independent checks. Final review also caught and fixed locale-sensitive checksum
+ordering. The integrated tree passes 19 Node and 258 Vitest regression tests plus strict TypeScript and
+the production build. Later implementation packets require their
 named prerequisites and Astra-authored tests before dispatch. This is not a declaration that the four
 Core Combat evidence tracks have all passed.
 

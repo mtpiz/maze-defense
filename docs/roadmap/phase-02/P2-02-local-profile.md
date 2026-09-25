@@ -1,7 +1,11 @@
 # P2-02: Recoverable Local Profile
 
-State: Ready for implementation; Astra API and 16 acceptance cases authored and red-checked. Dependencies: none.
-Worker: Terra recommended. Review owner: Astra.
+State: Accepted and integrated into the current working tree. Dependencies: none.
+Worker: Nash, GPT-5.6 Terra, medium. Review owner: Astra.
+
+Dispatched 2026-09-24. Agent: `01a0d626-71ec-7601-bfe8-39cd81094f01`.
+Isolated workspace: `C:/Users/mpitt/.codex/worktrees/phase2-local-profile/maze-defense`.
+Base revision: `99b78caf3abaed489307d3215c372ee2edd230a0`.
 
 ## Outcome and Contract
 
@@ -67,33 +71,52 @@ cross-tab/process writer coordination is out of scope for this mobile-first slic
 
 After successful load, serialize saves, capture and validate the caller's profile at invocation, and
 write the older/invalid/empty slot, preserving the newest valid one. Revisions advance only for a
-confirmed write. A rejected write rejects its caller and must not poison later queued saves. A fresh
-store can recover the remaining valid slot after an interrupted/torn write. Save before a successful
-load, or after a corrupt/unsupported/unavailable load, rejects without writes. No pointer/head key is
-needed. When a native write's completion is genuinely ambiguous, stop writes and require reload;
-do not time out a write and race a new write over its target slot.
+confirmed write. Verify a rejected native write with bounded readback: the exact intended envelope
+confirms success; an unchanged target rejects without poisoning later queued saves; unreadable,
+partial, or different target bytes reject and stop writes until reload. A fresh store can recover the
+remaining valid slot after an interrupted/torn write. Save before a successful load, or after a
+corrupt/unsupported/unavailable load, rejects without writes. No pointer/head key is needed. Do not
+time out a write and race a new write over its target slot.
 
 ## Acceptance
 
-- [ ] New store loads a new profile without overwriting unknown or corrupt existing data.
-- [ ] Versioned envelope has checksum, monotonically increasing revision, and last-known-good recovery.
-- [ ] Two-slot/journaled commits survive interrupted writes; concurrent saves finish in revision order.
-- [ ] Corrupt primary recovers the verified backup; corrupt both returns an explicit recoverable error
+- [x] New store loads a new profile without overwriting unknown or corrupt existing data.
+- [x] Versioned envelope has checksum, monotonically increasing revision, and last-known-good recovery.
+- [x] Two-slot/journaled commits survive interrupted writes; concurrent saves finish in revision order.
+- [x] Corrupt primary recovers the verified backup; corrupt both returns an explicit recoverable error
       while preserving bytes. Unknown future versions are not downgraded or replaced with defaults.
-- [ ] Write/quota failures are observable. Failed persistence is never reported as a completed save.
-- [ ] Reads have bounded completion; a late native response cannot replace newer in-memory state.
-- [ ] The same injected failure suite runs against storage semantics shared by web and Android adapters.
+- [x] Write/quota failures are observable. Failed persistence is never reported as a completed save.
+- [x] Reads have bounded completion; a late native response cannot replace newer in-memory state.
+- [x] The same injected failure suite runs against storage semantics shared by web and Android adapters.
 
 ## Validation and Handoff
 
 Astra supplied `validation/phase-02/profile.acceptance.test.ts`: 16 cases cover data validation,
 checksums/revision tampering, torn writes, ordered saves, captured input, quota failure, unsupported
-versions, unreadable slots, and late read replies. All 16 fail on missing implementation; the suite
-typechecks. Worker adds store unit tests and runs the named suite plus existing
-`local-settings.test.ts`, typecheck, and full tests at integration. Native persistence is verified later.
+versions, unreadable slots, and late read replies. All 16 pass. Worker unit tests add stale reload,
+commit-then-reject, partial write lockout, clear quota retry, and future-profile precedence coverage.
+Native persistence is verified later.
 Handoff supplies explicit load/recovery results and failure semantics for the P2-04 orchestrator.
 
 ```powershell
 npx.cmd vitest run --config validation/phase-02/vitest.config.ts validation/phase-02/profile.acceptance.test.ts
 npx.cmd tsc -p validation/phase-02/tsconfig.json
 ```
+
+## Review and Integration Evidence
+
+Nash implemented the packet in the isolated worktree and committed only the two source modules and
+their focused unit tests. Astra's first review rejected the initial result for a stale reload/write race,
+ambiguous native write completion, future profile-version precedence, and a committed scratch report.
+Fix round one serialized loads and saves, verified rejected writes with bounded readback, protected future
+profile data before ordinary envelope validation, and removed scratch evidence from the net Git diff.
+The scoped re-review found all four issues addressed with no new Critical or Important breakage.
+Final whole-packet review then found locale-sensitive Mission-key ordering in the checksum; a focused
+English-to-Danish collation regression reproduced the data-loss risk, and deterministic code-unit
+ordering fixed it.
+
+Independent integrated verification passed 16/16 architect acceptance cases, the validation TypeScript
+check, 19 Node tests and 258 Vitest tests across 39 files, strict production/test TypeScript, and the Vite
+production build. This accepts the deterministic adapter contract; Android persistence remains a later
+device-evidence obligation and is not claimed here. No checksum migration is needed because this new
+store has not yet been connected to a shipped runtime capable of writing profile slots.
