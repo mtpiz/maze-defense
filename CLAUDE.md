@@ -27,10 +27,9 @@ not product authority; its findings influence the current authorities only throu
 
 ## Git workflow
 
-Follow [Git Workflow and Releases](docs/process/GIT_WORKFLOW.md). Never commit or push to `main`.
-Start every change on a short-lived `<type>/<short-name>` branch from the latest `main` (types: feat,
-fix, balance, perf, refactor, test, docs, chore, ci), push it, and open a pull request. Merge only
-after every CI check passes. Do not push branches the owner has marked as in progress.
+Follow [Git Workflow](docs/process/GIT_WORKFLOW.md). Work in a git worktree on its own branch from
+the latest `main`. When the change is verified, rebase onto `main` and push it straight to `main` as
+a fast-forward. There are no pull requests or CI. Deploy to the phone with `npm run android:phone`.
 
 ## Commands
 

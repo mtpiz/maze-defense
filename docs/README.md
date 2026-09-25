@@ -14,8 +14,7 @@ Start here for successor work:
 10. [ADR Status Index](adr/README.md) — historical decisions, current status rules, and certified-baseline reconciliation.
 11. [Adversarial Design Review](design/ADVERSARIAL_REVIEW.md) — external red-team of the design, its
     business model, and its production plan. Challenge material, not product authority.
-12. [Git Workflow and Releases](process/GIT_WORKFLOW.md) — feature branches, required CI, branch
-    protection, and GitHub Release phone sideloads.
+12. [Git Workflow](process/GIT_WORKFLOW.md) — worktrees, direct merges to `main`, and phone deploys.
 
 The frozen live prototype and its historical planning material live in the sibling
 `tower-defense-claude` repository. This repository contains only successor product authority and
