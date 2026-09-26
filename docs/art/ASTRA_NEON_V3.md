@@ -293,3 +293,17 @@ a little plain. That restraint is what makes upgrading feel rewarding and gives 
 invest. Every visual that belongs to a tower follows the same ladder: its art grows 5% per Level, its
 projectile grows with it (the Siege shell radius uses the same `levelScale`), and its firing effects
 escalate from restrained at Level 1 to the showiest at Level 5.
+
+## Rail Slug
+
+Updated: 2026-09-26. Owner selection from the workbench Rail fire round: the slug, for now. The longer
+term direction for Rail fire is machine-gun style, with the twin barrel returning as the rapid-fire
+upgrade.
+
+- The Rail fires a glowing slug with a short streak behind it, from the drawn muzzle. At Level 1 it is
+  deliberately plain: a small slug, a streak about 0.16 cell long, a dim core, and two hit sparks. The
+  whole shot is gone within about 200 ms, and the existing restrained Level 1 test still holds.
+- Each higher Level lengthens, widens, and brightens the streak and widens the hit spray (two sparks per
+  Level). A hit ring joins at Level 3 and an afterimage along the full path at Level 4.
+- Reduced motion shows the streak resting at the target and fading, with no travel and no sparks.
+- Piercing remains hitscan in the simulation; the slug is presentation only.

@@ -4,6 +4,7 @@ import type { CreepSnapshot, PresentationEvent } from '@tower-defense/sim';
 import type { TowerFamilyId } from '@tower-defense/content';
 import { CREEP_COLORS, TOWER_COLORS, primitive, railMuzzle, siegeMuzzle, towerArt } from './neon-art.js';
 import { siegeShellPose, siegeShellRadius } from './siege-shell.js';
+import { drawRailSlug } from './rail-slug.js';
 import { kickBarrel, barrelOffset } from './rail-recoil.js';
 import { eventPoint } from './neon-coordinates.js';
 import { fittedBoard } from './hud-layout.js';
@@ -435,29 +436,14 @@ export class NeonArena {
         }
         fx.circle(shell.x - radius * .34, shell.y - radius * .42, radius * .3).fill({ color: core, alpha: .45 });
         fx.circle(shell.x - radius * .38, shell.y - radius * .46, radius * .14).fill({ color: core, alpha: .95 });
-      } else if (p.mechanicId === 'rail-line' && age < 160) {
+      } else if (p.mechanicId === 'rail-line') {
         const a = Math.atan2(end.y - from.y, end.x - from.x);
         const { forward, side } = railMuzzle(1, barrel, this.reducedMotion ? 0 : barrelOffset(born, this.#time));
         const muzzle = { x: from.x + Math.cos(a) * forward - Math.sin(a) * side,
           y: from.y + Math.sin(a) * forward + Math.cos(a) * side };
-        if (age < 100) {
-          const dx = end.x - muzzle.x, dy = end.y - muzzle.y;
-          const distance = Math.hypot(dx, dy);
-          const head = this.reducedMotion ? 1 : age / 100;
-          const tail = Math.max(0, head - .28 / Math.max(distance, .001));
-          const opacity = this.reducedMotion ? .58 * (1 - age / 100) : .72;
-          // Level-one fire is a compact tracer; the piercing mechanic remains hitscan.
-          for (const [width, tint, alpha] of [[.045, color, opacity], [.018, core, opacity * .88]]) {
-            fx.moveTo(muzzle.x + dx * tail, muzzle.y + dy * tail)
-              .lineTo(muzzle.x + dx * head, muzzle.y + dy * head)
-              .stroke({ color: tint!, width: width!, alpha: alpha!, cap: 'round' });
-          }
-        } else if (!this.reducedMotion) {
-          fx.circle(end.x, end.y, .045).fill({ color, alpha: .3 * (1 - (age - 100) / 60) });
-        }
-        if (!this.reducedMotion && age < 40) {
-          fx.circle(muzzle.x, muzzle.y, .035).fill({ color: core, alpha: .25 * (1 - age / 40) });
-        }
+        // Towers have no Levels in the simulation yet, so every Rail fires its Level 1 slug.
+        // The piercing mechanic remains hitscan; the slug is presentation only.
+        drawRailSlug(fx, muzzle, end, age, 1, color, core, this.reducedMotion);
       } else if (p.mechanicId === 'arc-chain' && age < 180) {
         let previous = from;
         for (const [index, target] of (chain ?? [end]).entries()) {
