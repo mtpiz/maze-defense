@@ -1,0 +1,57 @@
+[
+  {
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "mission": {
+      "id": "world-01-mission-01",
+      "arena": { "schemaVersion": 2, "id": "world-01-foundation-approach", "name": "Foundation Approach", "width": 9, "height": 14, "spawn": { "x": 0, "y": 6 }, "exit": { "x": 8, "y": 6 }, "waypoints": [], "inactive": [], "terrain": [] },
+      "startingLives": 20, "twoStarLives": 15, "openingFieldCredits": 100,
+      "constructionPolicy": "planning-only", "planningDurationTicks": 0, "earlyLaunchMaxCredits": 0,
+      "towerCatalog": { "foundation": { "familyId": "foundation", "fieldCreditCost": 10, "constructionDelayTicks": 15, "weapon": { "mechanicId": "direct", "damage": 4, "armorPiercing": 0, "rangeMilliCells": 1300, "minimumRangeMilliCells": 0, "coverageArcMilliDegrees": 360000, "cooldownTicks": 30, "targets": { "ground": true, "air": false }, "targeting": "first" } } },
+      "creeps": { "drone": { "id": "drone", "displayName": "Drone", "layer": "ground", "mass": 1, "movement": { "radiusMilliCells": 115, "pushResistance": 3, "pattern": "runner" }, "mechanicId": "baseline-runner", "maxHealth": 24, "armor": 0, "speedMilliCellsPerSecond": 1700, "lifeDamage": 1, "fieldCreditBounty": 1 } },
+      "waves": [
+        { "id": "first-foundations", "tacticalPurpose": "Establish a Foundation route against a readable first Drone file.", "groups": [{ "creepId": "drone", "count": 12, "firstSpawnTick": 30, "intervalTicks": 90, "burstSize": 1 }] },
+        { "id": "route-extension", "tacticalPurpose": "Ask the existing Foundation corridor to hold a denser Drone approach.", "groups": [{ "creepId": "drone", "count": 18, "firstSpawnTick": 30, "intervalTicks": 100, "burstSize": 1 }] },
+        { "id": "sustained-contact", "tacticalPurpose": "Confirm repeated Foundation coverage through a sustained final Drone file.", "groups": [{ "creepId": "drone", "count": 22, "firstSpawnTick": 30, "intervalTicks": 110, "burstSize": 1 }] }
+      ]
+    },
+    "progression": { "requires": [], "loans": [], "awards": [] }
+  },
+  {
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "mission": {
+      "id": "world-01-mission-02",
+      "arena": { "schemaVersion": 2, "id": "world-01-waypoint-bend", "name": "Waypoint Bend", "width": 9, "height": 14, "spawn": { "x": 0, "y": 6 }, "exit": { "x": 8, "y": 6 }, "waypoints": [{ "x": 4, "y": 2 }], "inactive": [], "terrain": [] },
+      "startingLives": 20, "twoStarLives": 15, "openingFieldCredits": 100,
+      "constructionPolicy": "live-foundation", "planningDurationTicks": 450, "earlyLaunchMaxCredits": 6,
+      "towerCatalog": { "foundation": { "familyId": "foundation", "fieldCreditCost": 10, "constructionDelayTicks": 15, "weapon": { "mechanicId": "direct", "damage": 4, "armorPiercing": 0, "rangeMilliCells": 1300, "minimumRangeMilliCells": 0, "coverageArcMilliDegrees": 360000, "cooldownTicks": 30, "targets": { "ground": true, "air": false }, "targeting": "first" } } },
+      "creeps": { "drone": { "id": "drone", "displayName": "Drone", "layer": "ground", "mass": 1, "movement": { "radiusMilliCells": 115, "pushResistance": 3, "pattern": "runner" }, "mechanicId": "baseline-runner", "maxHealth": 24, "armor": 0, "speedMilliCellsPerSecond": 1700, "lifeDamage": 1, "fieldCreditBounty": 1 } },
+      "waves": [
+        { "id": "waypoint-read", "tacticalPurpose": "Show that Ground Drones must touch the marked bend before the exit.", "fieldCreditAllotment": 30, "groups": [{ "creepId": "drone", "count": 8, "firstSpawnTick": 30, "intervalTicks": 75, "burstSize": 1 }] },
+        { "id": "skitter-pressure", "tacticalPurpose": "Require a live Foundation reroute while the second Drone file is moving.", "fieldCreditAllotment": 35, "groups": [{ "creepId": "drone", "count": 14, "firstSpawnTick": 30, "intervalTicks": 48, "burstSize": 1 }] }
+      ]
+    },
+    "progression": { "requires": ["world-01-mission-01"], "loans": [], "awards": [] }
+  },
+  {
+    "schemaVersion": 1,
+    "contentVersion": 1,
+    "mission": {
+      "id": "world-01-rail-trial",
+      "arena": { "schemaVersion": 2, "id": "world-01-rail-lane", "name": "Rail Lane", "width": 9, "height": 14, "spawn": { "x": 0, "y": 6 }, "exit": { "x": 8, "y": 6 }, "waypoints": [{ "x": 4, "y": 2 }], "inactive": [], "terrain": [] },
+      "startingLives": 20, "twoStarLives": 15, "openingFieldCredits": 120,
+      "constructionPolicy": "live-foundation", "planningDurationTicks": 450, "earlyLaunchMaxCredits": 6,
+      "towerCatalog": {
+        "foundation": { "familyId": "foundation", "fieldCreditCost": 10, "constructionDelayTicks": 15, "weapon": { "mechanicId": "direct", "damage": 4, "armorPiercing": 0, "rangeMilliCells": 1300, "minimumRangeMilliCells": 0, "coverageArcMilliDegrees": 360000, "cooldownTicks": 30, "targets": { "ground": true, "air": false }, "targeting": "first" } },
+        "rail": { "familyId": "rail", "fieldCreditCost": 35, "constructionDelayTicks": 30, "weapon": { "mechanicId": "rail-line", "damage": 26, "armorPiercing": 3, "rangeMilliCells": 2500, "minimumRangeMilliCells": 0, "coverageArcMilliDegrees": 90000, "cooldownTicks": 75, "targets": { "ground": true, "air": true }, "targeting": "first", "beamHalfWidthMilliCells": 350, "maxTargets": 1 } }
+      },
+      "creeps": { "drone": { "id": "drone", "displayName": "Drone", "layer": "ground", "mass": 1, "movement": { "radiusMilliCells": 115, "pushResistance": 3, "pattern": "runner" }, "mechanicId": "baseline-runner", "maxHealth": 24, "armor": 0, "speedMilliCellsPerSecond": 1700, "lifeDamage": 1, "fieldCreditBounty": 1 } },
+      "waves": [
+        { "id": "lane-calibration", "tacticalPurpose": "Make the loaned Rail commit down a long, visible Drone firing lane.", "fieldCreditAllotment": 35, "groups": [{ "creepId": "drone", "count": 14, "firstSpawnTick": 30, "intervalTicks": 75, "burstSize": 1 }] },
+        { "id": "lane-handoff", "tacticalPurpose": "Pair Rail lane kills with Foundation cleanup around the waypoint approach.", "fieldCreditAllotment": 40, "groups": [{ "creepId": "drone", "count": 18, "firstSpawnTick": 30, "intervalTicks": 54, "burstSize": 1 }] }
+      ]
+    },
+    "progression": { "requires": ["world-01-mission-02"], "loans": ["rail"], "awards": ["rail"] }
+  }
+]

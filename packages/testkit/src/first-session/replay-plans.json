@@ -1,0 +1,44 @@
+[
+  {
+    "id": "m1-foundation-corridor-win", "missionId": "world-01-mission-01", "seed": 17, "simulationVersion": 13, "contentHash": "7503c616", "outcome": "victory", "durationTicks": 5474, "determinismHash": "107ce851",
+    "commands": [
+      { "tick": 0, "command": { "type": "place-foundation", "cell": 21 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 30 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 39 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 48 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 57 } },
+      { "tick": 0, "command": { "type": "place-foundation", "cell": 66 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 75 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 84 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 93 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 94 } },
+      { "tick": 0, "command": { "type": "start-wave" } }, { "tick": 1148, "command": { "type": "start-wave" } }, { "tick": 3006, "command": { "type": "start-wave" } }
+    ]
+  },
+  {
+    "id": "m1-empty-defeat", "missionId": "world-01-mission-01", "seed": 17, "simulationVersion": 13, "contentHash": "7503c616", "outcome": "defeat", "durationTicks": 2034, "determinismHash": "b5fd1b03",
+    "commands": [{ "tick": 0, "command": { "type": "start-wave" } }, { "tick": 1162, "command": { "type": "start-wave" } }]
+  },
+  {
+    "id": "m2-live-waypoint-win", "missionId": "world-01-mission-02", "seed": 17, "simulationVersion": 13, "contentHash": "52f1f472", "outcome": "victory", "durationTicks": 1609, "determinismHash": "69da6648",
+    "commands": [
+      { "tick": 0, "command": { "type": "place-foundation", "cell": 21 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 30 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 39 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 48 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 57 } },
+      { "tick": 0, "command": { "type": "place-foundation", "cell": 66 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 75 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 84 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 93 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 94 } },
+      { "tick": 0, "command": { "type": "start-wave" } }, { "tick": 683, "command": { "type": "start-wave" } }, { "tick": 1500, "command": { "type": "place-foundation", "cell": 47 } }
+    ]
+  },
+  {
+    "id": "m2-empty-defeat", "missionId": "world-01-mission-02", "seed": 17, "simulationVersion": 13, "contentHash": "52f1f472", "outcome": "defeat", "durationTicks": 1681, "determinismHash": "2e4ae272",
+    "commands": [{ "tick": 0, "command": { "type": "start-wave" } }, { "tick": 839, "command": { "type": "start-wave" } }]
+  },
+  {
+    "id": "m3-east-rail-win", "missionId": "world-01-rail-trial", "seed": 17, "simulationVersion": 13, "contentHash": "c7ebd3e3", "outcome": "victory", "durationTicks": 2476, "determinismHash": "948d2533",
+    "commands": [
+      { "tick": 0, "command": { "type": "place-foundation", "cell": 51 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 30 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 39 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 48 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 57 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 66 } },
+      { "tick": 0, "command": { "type": "install-specialist", "towerId": "tower-1", "familyId": "rail" } }, { "tick": 0, "command": { "type": "aim-tower", "towerId": "tower-1", "facingMilliDegrees": 0 } }, { "tick": 0, "command": { "type": "start-wave" } }, { "tick": 1244, "command": { "type": "start-wave" } }
+    ]
+  },
+  {
+    "id": "m3-north-rail-win", "missionId": "world-01-rail-trial", "seed": 17, "simulationVersion": 13, "contentHash": "c7ebd3e3", "outcome": "victory", "durationTicks": 2178, "determinismHash": "456fd626",
+    "commands": [
+      { "tick": 0, "command": { "type": "place-foundation", "cell": 12 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 30 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 39 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 48 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 57 } }, { "tick": 0, "command": { "type": "place-foundation", "cell": 66 } },
+      { "tick": 0, "command": { "type": "install-specialist", "towerId": "tower-1", "familyId": "rail" } }, { "tick": 0, "command": { "type": "aim-tower", "towerId": "tower-1", "facingMilliDegrees": 90000 } }, { "tick": 0, "command": { "type": "start-wave" } }, { "tick": 1089, "command": { "type": "start-wave" } }
+    ]
+  },
+  {
+    "id": "m3-empty-defeat", "missionId": "world-01-rail-trial", "seed": 17, "simulationVersion": 13, "contentHash": "c7ebd3e3", "outcome": "defeat", "durationTicks": 1873, "determinismHash": "8785b30e",
+    "commands": [{ "tick": 0, "command": { "type": "start-wave" } }, { "tick": 1289, "command": { "type": "start-wave" } }]
+  }
+]

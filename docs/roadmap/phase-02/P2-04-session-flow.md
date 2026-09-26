@@ -1,6 +1,6 @@
 # P2-04: Campaign Flow and Results
 
-State: Blocked on accepted P2-02/P2-03 and Astra campaign tests. Worker: Terra. Review owner: Astra.
+State: Blocked on Astra campaign API and acceptance tests; P2-02/P2-03 accepted. Worker: Terra. Review owner: Astra.
 
 ## Outcome and Boundaries
 
