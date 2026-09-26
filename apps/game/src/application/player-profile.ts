@@ -1,4 +1,4 @@
-import { TOWER_FAMILIES, type TowerFamilyId } from '@tower-defense/content';
+import { TOWER_FAMILIES, type CompiledCampaignMission, type TowerFamilyId } from '@tower-defense/content';
 
 export interface PlayerProfile {
   readonly schemaVersion: 1;
@@ -9,6 +9,10 @@ export interface PlayerProfile {
     | { readonly kind: 'mission'; readonly missionId: string }
     | { readonly kind: 'map' };
 }
+
+export type MissionResult =
+  | { readonly outcome: 'victory'; readonly stars: 1 | 2 | 3 }
+  | { readonly outcome: 'defeat'; readonly stars: 0 };
 
 const PROFILE_KEYS = ['schemaVersion', 'completedMissions', 'unlockedBlueprints', 'seenHelp', 'destination'];
 const KEBAB_CASE_ID = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -96,4 +100,32 @@ export function parsePlayerProfile(value: unknown): PlayerProfile {
   }
 
   return freezeProfile({ completedMissions, unlockedBlueprints, seenHelp, destination });
+}
+
+export function applyMissionResult(
+  profile: PlayerProfile,
+  entry: CompiledCampaignMission,
+  result: MissionResult,
+): PlayerProfile {
+  const victory = result.outcome === 'victory' && (result.stars === 1 || result.stars === 2 || result.stars === 3);
+  const defeat = result.outcome === 'defeat' && result.stars === 0;
+  if (!victory && !defeat) throw new Error('Invalid Mission result');
+  if (defeat) return parsePlayerProfile(profile);
+
+  const previousStars = profile.completedMissions[entry.mission.id] ?? 0;
+  const completedMissions = {
+    ...profile.completedMissions,
+    [entry.mission.id]: Math.max(previousStars, result.stars) as 1 | 2 | 3,
+  };
+  const unlockedBlueprints = [...profile.unlockedBlueprints];
+  for (const award of entry.progression.awards) {
+    if (isBlueprint(award) && !unlockedBlueprints.includes(award)) unlockedBlueprints.push(award);
+  }
+
+  return freezeProfile({
+    completedMissions,
+    unlockedBlueprints,
+    seenHelp: [...profile.seenHelp],
+    destination: { kind: 'map' },
+  });
 }

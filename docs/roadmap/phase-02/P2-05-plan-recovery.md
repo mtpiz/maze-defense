@@ -1,6 +1,6 @@
 # P2-05: Retry and Between-Wave Recovery
 
-State: Blocked on P2-04 and Astra recovery tests. Worker: Terra. Review owner: Astra.
+State: Blocked on Astra recovery design and acceptance tests; P2-04 accepted. Worker: Terra. Review owner: Astra.
 
 ## Outcome and Boundaries
 

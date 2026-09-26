@@ -1,6 +1,6 @@
 # P2-06: Minimal First-Session UI
 
-State: Blocked on P2-04 and Astra UI acceptance tests. Worker: Terra. Astra owns visual review.
+State: Blocked on Astra UI acceptance tests; P2-04 accepted. Worker: Terra. Astra owns visual review.
 
 ## Outcome and Boundaries
 

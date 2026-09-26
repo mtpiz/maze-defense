@@ -21,13 +21,13 @@ not certification of device performance or permission to multiply art across Wor
 | [P2-01](P2-01-content-contract.md) | Versioned Mission compiler with stable content identity | None | Accepted: integrated, 17 acceptance checks pass | Terra |
 | [P2-02](P2-02-local-profile.md) | Recoverable, versioned local player profile | None | Accepted: integrated, 16 acceptance checks pass | Terra |
 | [P2-03](P2-03-opening-missions.md) | Authored M1, M2, and required Rail trial | P2-01 | Accepted: 15 mission acceptance checks and seven replays pass | Terra |
-| [P2-04](P2-04-session-flow.md) | Campaign selection, results, and idempotent Rail award | P2-02, P2-03 | Blocked | Terra |
+| [P2-04](P2-04-session-flow.md) | Campaign selection, results, and idempotent Rail award | P2-02, P2-03 | Accepted: 12 campaign acceptance checks pass | Terra |
 | [P2-05](P2-05-plan-recovery.md) | Opening-plan retry and between-wave recovery | P2-04 | Blocked | Terra |
 | [P2-06](P2-06-first-session-ui.md) | Cold open, small map, results, and Help replay | P2-04 | Blocked | Terra; Astra design review |
 | [P2-07](P2-07-first-session-gate.md) | Build-linked Android and uncoached first-session evidence | P2-00, P2-05, P2-06 | Blocked | Astra |
 
 Ready means the inputs and architect-owned acceptance tests/checklist exist, not that the feature is
-implemented. P2-01, P2-02 and P2-03 are accepted. P2-04 requires its frozen campaign API and independent expected-red tests before dispatch. P2-05/P2-06 can run together after the
+implemented. P2-01 through P2-04 are accepted. P2-05 needs its recovery design and acceptance tests; P2-06 needs its independent UI acceptance gate. P2-05/P2-06 can run together after the
 P2-04 interface is integrated. Shared exports, bootstrap, and controller edits are serialized.
 
 ## Architect and Worker Responsibilities

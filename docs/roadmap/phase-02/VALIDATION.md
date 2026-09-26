@@ -1,6 +1,6 @@
 # Astra-Owned Phase 2 Validation
 
-The task checklists below are acceptance requirements. P2-01, P2-02 and P2-03 have executable feature
+The task checklists below are acceptance requirements. P2-01 through P2-04 have executable feature
 acceptance suites. Astra must author and red-check each later suite before releasing its packet.
 Workers add unit tests for implementation detail, but do not edit these independent contracts.
 
@@ -18,6 +18,9 @@ npx.cmd vitest run --config validation/phase-02/vitest.config.ts validation/phas
 
 # P2-03: 15 independent mission/replay cases.
 npx.cmd vitest run --config validation/phase-02/vitest.config.ts validation/phase-02/missions.acceptance.test.ts
+
+# P2-04: 12 independent campaign/result/save cases.
+npx.cmd vitest run --config validation/phase-02/vitest.config.ts validation/phase-02/campaign.acceptance.test.ts
 
 # Current shipped behavior: must stay green.
 npm.cmd test
@@ -43,7 +46,7 @@ integration and phase gates, not repeatedly for every documentation or styling c
 | P2-01 | Schema/version, immutable detached output, canonical hash, semantic hash changes, malformed waves/references, bad Arena structure, available loans, simulator compatibility | `validation/phase-02/content.acceptance.test.ts`: 17 passed |
 | P2-02 | Empty store, valid reload, corrupt primary/backup, both corrupt preserved, unknown future version, interrupted write, concurrent writes, quota rejection, bounded native-read failure | `validation/phase-02/profile.acceptance.test.ts`: 16 passed |
 | P2-03 | M1 no Waypoint/Drone-only, M2 one Waypoint/live build, M3 Rail loan/award, connected unlock order, purposeful waves, deterministic wins/losses, forecast matches groups | `validation/phase-02/missions.acceptance.test.ts`: 15 passed; seven replay goldens reviewed |
-| P2-04 | First boot M1, map after first victory, locked nodes denied, trial loan without ownership, victory unlock once, defeat unlock never, replay no duplicated reward, stars never decrease | Astra authors `campaign.acceptance.test.ts` after P2-02/03 |
+| P2-04 | First boot M1, map after first victory, locked nodes denied, trial loan without ownership, victory unlock once, defeat unlock never, replay no duplicated reward, stars never decrease | `validation/phase-02/campaign.acceptance.test.ts`: 12 passed |
 | P2-05 | Opening commands/facing/credits restored, rejected command handling, version/loadout mismatch, restart from completed-wave boundary, no duplicated kills/awards, paused recovery | Astra authors `recovery.acceptance.test.ts` after P2-04 |
 | P2-06 | No first-boot menu, Foundation tap/hold/aim preserved, unavailable options absent, map unlock, fast results/retry, Help no rewards, safe areas, reduced motion | Astra authors `first-session-ui.acceptance.test.ts` plus browser journey after P2-04 |
 | P2-07 | Fresh install/profile M1-M3 journey, Rail survives restart, recovery/corruption checks, frozen background, latest APK identity, uncoached observations | Astra authors final native journey once controls are integrated |
@@ -65,3 +68,5 @@ integration and phase gates, not repeatedly for every documentation or styling c
   failed cases, and owner verdict. Do not overwrite earlier evidence or claim a different build was tested.
 
 P2-03 red gate (2026-09-25): 15 cases discovered and failed for the absent catalog adapter before Terra dispatch; 17 compiler cases passed. After bounded implementation, independent replay verifies all seven wins/losses, actual M2 route adaptation with active creeps, distinct M3 Rail positions and a losing reversed-aim counterfactual. Scripted timing remains a hypothesis for human play.
+
+P2-04 red gate (2026-09-26): 10 initial campaign cases failed for the absent controller before Terra dispatch, then 11 after contract review. Astra added a twelfth synchronous-save retry regression and observed it fail before the fix. All 12 now pass, including real mission replays, ProfileStore reload, held/rejected/synchronous writes, reentrant listeners, retained results and map-session detachment.
