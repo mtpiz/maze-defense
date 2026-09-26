@@ -2,7 +2,8 @@ import { Application, Container, Graphics, Text, Texture, RendererType, type Web
 import type { BenchmarkViewState } from '../application/benchmark-controller.js';
 import type { CreepSnapshot, PresentationEvent } from '@tower-defense/sim';
 import type { TowerFamilyId } from '@tower-defense/content';
-import { CREEP_COLORS, TOWER_COLORS, primitive, railMuzzle, towerArt } from './neon-art.js';
+import { CREEP_COLORS, TOWER_COLORS, primitive, railMuzzle, siegeMuzzle, towerArt } from './neon-art.js';
+import { siegeShellPose } from './siege-shell.js';
 import { kickBarrel, barrelOffset } from './rail-recoil.js';
 import { eventPoint } from './neon-coordinates.js';
 import { fittedBoard } from './hud-layout.js';
@@ -403,10 +404,27 @@ export class NeonArena {
       if (p.mechanicId === 'siege-blast') {
         const impact = s.render.impacts.find(impact => impact.id === p.impactId);
         if (!impact) continue;
+        // The shell leaves the muzzle and arcs over a faint glow that tracks the ground beneath it.
+        // Effects stay in the family color and core so shots remain identifiable.
+        const a = Math.atan2(end.y - from.y, end.x - from.x), forward = siegeMuzzle(1, 0);
+        const muzzle = { x: from.x + Math.cos(a) * forward, y: from.y + Math.sin(a) * forward };
         const t = siegeFlightProgress(event.tick, impact.impactTick, s.render.tick);
-        const x = from.x + (end.x - from.x) * t, y = from.y + (end.y - from.y) * t - Math.sin(t * Math.PI) * .7;
-        fx.circle(x, y, .2).fill({ color, alpha: .2 });
-        primitive(fx, 'broodling', x, y, .1, Math.PI/4).fill(core).stroke({ color, width: .035 });
+        const shell = siegeShellPose(muzzle, end, t);
+        if (!this.reducedMotion && age < 450) {
+          const k = age / 450;
+          fx.circle(muzzle.x + Math.cos(a) * .12 * k, muzzle.y + Math.sin(a) * .12 * k, .06 + .12 * k)
+            .fill({ color, alpha: .18 * (1 - k) });
+        }
+        if (age < 120) fx.circle(muzzle.x, muzzle.y, .03 + .09 * (1 - age / 120)).fill({ color: core, alpha: .8 * (1 - age / 120) });
+        fx.circle(shell.ground.x, shell.ground.y, .09 * (1 - .35 * shell.height))
+          .fill({ color, alpha: .22 * (1 - .5 * shell.height) });
+        if (!this.reducedMotion) for (let k = 3; k >= 1; k--) {
+          const trail = siegeShellPose(muzzle, end, t - k * .045);
+          fx.circle(trail.x, trail.y, .05).fill({ color, alpha: .12 * (4 - k) });
+        }
+        const radius = .1 * (1 + .3 * shell.height);
+        fx.circle(shell.x, shell.y, radius).fill(color).stroke({ color: core, width: .02 });
+        fx.circle(shell.x - radius * .3, shell.y - radius * .35, radius * .35).fill({ color: core, alpha: .9 });
       } else if (p.mechanicId === 'rail-line' && age < 160) {
         const a = Math.atan2(end.y - from.y, end.x - from.x);
         const { forward, side } = railMuzzle(1, barrel, this.reducedMotion ? 0 : barrelOffset(born, this.#time));

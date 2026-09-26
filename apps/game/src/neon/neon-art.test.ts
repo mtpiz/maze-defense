@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Graphics } from 'pixi.js';
-import { railMuzzle, towerArt, type TowerArtStage } from './neon-art.js';
+import { levelScale, railMuzzle, siegeMuzzle, towerArt, type TowerArtStage } from './neon-art.js';
 
 type GraphicsCall = { name: string; args: unknown[] };
 
@@ -26,8 +26,16 @@ const render = (family: 'foundation' | 'rail' | 'siege' | 'arc', leftRecoil = 0,
   return graphics;
 };
 
-// The Rail pedestal is its ground shadow, six bevel facets, and the flat top face.
+// A pedestal is its ground shadow, one bevel facet per side, and the flat top face.
 const RAIL_PEDESTAL_POLYS = 8;
+const SIEGE_PEDESTAL_POLYS = 10;
+
+const scaled = (polygons: number[][], factor: number): number[][] => polygons.map(points => points.map(v => v * factor));
+
+const expectPolygons = (actual: number[][], expected: number[][]): void => {
+  expect(actual).toHaveLength(expected.length);
+  actual.forEach((points, polygon) => points.forEach((value, i) => expect(value).toBeCloseTo(expected[polygon]![i]!, 12)));
+};
 
 const numericArguments = (value: unknown): number[] => {
   if (typeof value === 'number') return [value];
@@ -86,22 +94,51 @@ describe('neon tower art geometry', () => {
     expect(kicked.slice(cap + 3)).toEqual(base.slice(cap + 3));
   });
 
-  it('draws Rail Level 2 as Level 1 plus lit pedestal seams and guide rails', () => {
+  it('draws Rail Level 2 as a slightly larger Level 1 plus lit pedestal seams and guide rails', () => {
     const level1 = polygonPoints(render('rail'));
     const level2 = polygonPoints(render('rail', 0, 0, 2));
     const seams = 6 * 2;
 
-    expect(level2.slice(0, RAIL_PEDESTAL_POLYS)).toEqual(level1.slice(0, RAIL_PEDESTAL_POLYS));
-    expect(level2.slice(RAIL_PEDESTAL_POLYS + seams, RAIL_PEDESTAL_POLYS + seams + 4))
-      .toEqual(level1.slice(RAIL_PEDESTAL_POLYS));
+    expectPolygons(level2.slice(0, RAIL_PEDESTAL_POLYS), scaled(level1.slice(0, RAIL_PEDESTAL_POLYS), 1.05));
+    expectPolygons(level2.slice(RAIL_PEDESTAL_POLYS + seams, RAIL_PEDESTAL_POLYS + seams + 4),
+      scaled(level1.slice(RAIL_PEDESTAL_POLYS), 1.05));
     expect(level2).toHaveLength(level1.length + seams + 2);
+  });
+
+  it('grows each Tower Level by 5% up to Level 5', () => {
+    expect([1, 2, 3, 4, 5].map(levelScale)).toEqual([1, 1.05, 1.1, 1.15, 1.2]);
   });
 
   it('starts Rail fire at the muzzle of the drawn barrel', () => {
     expect(railMuzzle(1, 0, 0)).toEqual({ forward: .32 * .8, side: 0 });
     expect(railMuzzle(1, 1, .17).forward).toBeCloseTo((.32 - .17) * .8, 12);
-    expect(railMuzzle('rapid-fire', 0, 0)).toEqual({ forward: .49 * .8, side: -.15 * .8 });
-    expect(railMuzzle('rapid-fire', 1, 0).side).toBeCloseTo(.15 * .8, 12);
+    expect(railMuzzle(2, 0, 0).forward).toBeCloseTo(.32 * .8 * 1.05, 12);
+    expect(railMuzzle('rapid-fire', 0, 0).forward).toBeCloseTo(.49 * .8 * 1.1, 12);
+    expect(railMuzzle('rapid-fire', 0, 0).side).toBeCloseTo(-.15 * .8 * 1.1, 12);
+    expect(railMuzzle('rapid-fire', 1, 0).side).toBeCloseTo(.15 * .8 * 1.1, 12);
+  });
+
+  it('keeps the Siege pedestal still while the cannon turns', () => {
+    const facingRight = polygonPoints(render('siege', 0, 0, 1, 0));
+    const facingUp = polygonPoints(render('siege', 0, 0, 1, -Math.PI / 2));
+
+    expect(facingUp.slice(0, SIEGE_PEDESTAL_POLYS)).toEqual(facingRight.slice(0, SIEGE_PEDESTAL_POLYS));
+    expect(facingUp.slice(SIEGE_PEDESTAL_POLYS)).not.toEqual(facingRight.slice(SIEGE_PEDESTAL_POLYS));
+  });
+
+  it('draws Siege Level 2 as a slightly larger Level 1 plus lit seams and barrel hoops', () => {
+    const level1 = polygonPoints(render('siege'));
+    const level2 = polygonPoints(render('siege', 0, 0, 2));
+    const seams = 8 * 2;
+
+    expectPolygons(level2.slice(0, SIEGE_PEDESTAL_POLYS), scaled(level1.slice(0, SIEGE_PEDESTAL_POLYS), 1.05));
+    expect(level2).toHaveLength(level1.length + seams + 2);
+  });
+
+  it('launches Siege shells from the carronade muzzle', () => {
+    expect(siegeMuzzle(1, 0)).toBeCloseTo(.26 * .8, 12);
+    expect(siegeMuzzle(1, .17)).toBeCloseTo((.26 - .085) * .8, 12);
+    expect(siegeMuzzle(2, 0)).toBeCloseTo(.26 * .8 * 1.05, 12);
   });
 
   it('moves only the corresponding rapid-fire barrel and preserves the other barrel and chassis', () => {
@@ -111,11 +148,11 @@ describe('neon tower art geometry', () => {
 
     expect(left.slice(0, 2)).toEqual(base.slice(0, 2));
     expect(left.slice(6, 11)).toEqual(base.slice(6, 11));
-    expectTranslation(left.slice(2, 6), base.slice(2, 6), -.192, 0);
+    expectTranslation(left.slice(2, 6), base.slice(2, 6), -.24 * .8 * 1.1, 0);
 
     expect(right.slice(0, 6)).toEqual(base.slice(0, 6));
     expect(right.slice(10)).toEqual(base.slice(10));
-    expectTranslation(right.slice(6, 10), base.slice(6, 10), -.192, 0);
+    expectTranslation(right.slice(6, 10), base.slice(6, 10), -.24 * .8 * 1.1, 0);
   });
 
   it('draws distinct finite rail, siege, and arc silhouettes', () => {

@@ -35,9 +35,13 @@ export const TowerIcon = ({ family }: { family: TowerFamilyId }) => (
       <path d="M20.2 2.5h7.6v29.2h-7.6z" fill="#05080d" stroke="currentColor" stroke-width="1.5" />
       <path d="M22.1 2.5h3.8v6.9h-3.8zM24 26.6 27 28.3V31.7L24 33.4 21 31.7V28.3z" fill="#eaffff" />
     </> : family === 'siege' ? <>
-      <path d="m7 13 17-6 17 6v26H7z" fill="currentColor" opacity=".5" />
-      <path d="M5 25h8v16H5zM35 25h8v16h-8zM16 7h16v29H16z" fill="currentColor" />
-      <path d="M19 6h10v10H19z" fill="#171318" /><path d="M21 6h6v3h-6zM19 20h10v10H19z" fill="#fff0c8" />
+      <path d="M41.6 22.7V37.3L31.3 47.6H16.7L6.4 37.3V22.7L16.7 12.4H31.3z" fill="#7a5a16" opacity=".8" />
+      <path d="M35.9 25.1V34.9L28.9 41.9H19.1L12.1 34.9V25.1L19.1 18.1H28.9z" fill="#2a1f08" />
+      <circle cx="24" cy="42.9" r="4.3" fill="#665217" stroke="currentColor" stroke-width="1.5" />
+      <path d="M15.4 40.3 16.3 14.5H31.7L32.6 40.3z" fill="#665217" stroke="currentColor" stroke-width="1.5" />
+      <path d="M15.4 40.3 16.3 14.5H24V40.3z" fill="#fff0c8" opacity=".15" />
+      <path d="M13.7 7.6h20.6v6.9H13.7z" fill="#665217" stroke="currentColor" stroke-width="1.5" />
+      <path d="M18 7.6h12v2.6H18z" fill="#05080d" />
     </> : family === 'arc' ? <>
       {[0,120,240].map(rotation => <g transform={`rotate(${rotation} 24 24)`}>
         <path d="m19 22-3-11 5-8 8 10-1 9z" fill="currentColor" opacity=".6" />

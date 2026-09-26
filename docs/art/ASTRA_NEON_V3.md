@@ -264,3 +264,21 @@ small and plain so later Levels have room to grow.
 - The Rail radial and console icon matches the Level 1 art.
 
 Presentation only: no simulation, balance, or timing values changed.
+
+## Siege Carronade, Level Growth, and the Siege Shell
+
+Updated: 2026-09-25. Owner selection from the tower workbench, Siege round 2 (C1, Carronade).
+
+- Siege uses the Rail pedestal grammar as an octagon: still, bevel-lit, translucent amber (`#7a5a16` at
+  55% opacity). On it sits a short, wide bronze barrel with a swelled muzzle and a breech knob. The
+  barrel is split along its axis and each half is shaded by how much it faces the light, so it reads as
+  round while it turns. The earlier Round 1 Siege turrets were rejected as too close to Rail.
+- Siege Level 2 lights the eight pedestal seams and adds two glowing hoops around the barrel.
+- Each Tower Level draws 5% larger than the one below, so Level 5 is 20% larger than Level 1. The
+  rapid-fire Rail art counts as Level 3.
+- Siege shells leave the carronade muzzle along the firing direction. A round ball rises and swells on
+  the arc above a faint glow that tracks the ground, with a short trail, a muzzle flash, and a puff.
+  All shell effects stay in the Siege color and core, like every other projectile.
+- The Siege radial and console icon matches the carronade.
+
+Presentation only: no simulation, balance, or timing values changed.

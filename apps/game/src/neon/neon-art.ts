@@ -20,11 +20,15 @@ export function primitive(g: Graphics, kind: string, x: number, y: number, r: nu
 export type TowerArtStage = 1 | 2 | 'rapid-fire';
 
 const ART_SIZE = .8;
-const RAIL_PEDESTAL = 0x1a5f80;
-const RAIL_PEDESTAL_TOP = 0x0b2a3a;
-const RAIL_PEDESTAL_ALPHA = .55;
+// Each Tower Level draws 5% larger than the last, so Level 5 is 20% larger than Level 1.
+const LEVEL_GROWTH = .05;
+const PEDESTAL_ALPHA = .55;
 // Screen-space light from the top left, matching the downward drop shadow.
 const LIGHT_X = -.5, LIGHT_Y = -.85;
+const LIGHT_LENGTH = Math.hypot(LIGHT_X, LIGHT_Y);
+
+export const levelScale = (level: number): number => 1 + LEVEL_GROWTH * (level - 1);
+const stageLevel = (stage: TowerArtStage): number => stage === 'rapid-fire' ? 3 : stage;
 
 const regularPolygon = (sides: number, radius: number, spin = 0, cx = 0, cy = 0): number[] =>
   Array.from({ length: sides }, (_, i) => {
@@ -39,13 +43,19 @@ const tint = (color: number, amount: number): number => {
 
 /** Rail muzzle in cells from the tower centre, before rotating to the tower's facing. */
 export function railMuzzle(stage: TowerArtStage, barrel: number, recoil: number): { forward: number; side: number } {
-  if (stage === 'rapid-fire') return { forward: (.49 - recoil) * ART_SIZE, side: (barrel === 0 ? -.15 : .15) * ART_SIZE };
-  return { forward: (.32 - recoil) * ART_SIZE, side: 0 };
+  const size = ART_SIZE * levelScale(stageLevel(stage));
+  if (stage === 'rapid-fire') return { forward: (.49 - recoil) * size, side: (barrel === 0 ? -.15 : .15) * size };
+  return { forward: (.32 - recoil) * size, side: 0 };
+}
+
+/** Siege muzzle distance in cells from the tower centre, along the tower's facing. */
+export function siegeMuzzle(stage: 1 | 2, recoil: number): number {
+  return (.26 - recoil * .5) * ART_SIZE * levelScale(stage);
 }
 
 export function towerArt(g: Graphics, family: TowerFamilyId, x: number, y: number,
   angle = -Math.PI / 2, leftRecoil = 0, rightRecoil = 0, alpha = 1, stage: TowerArtStage = 1): void {
-  const size = ART_SIZE;
+  const size = ART_SIZE * levelScale(stageLevel(stage));
   const color = TOWER_COLORS[family];
   const { core } = projectileColors(family);
   const point = (px: number, py: number) => ({ x: x + size * (px * Math.cos(angle) - py * Math.sin(angle)),
@@ -65,8 +75,22 @@ export function towerArt(g: Graphics, family: TowerFamilyId, x: number, y: numbe
   };
   const box = (px: number, py: number, w: number, h: number, fill: number, line?: number) =>
     plate([px, py, px + w, py, px + w, py + h, px, py + h], fill, line);
+  const recoil = Math.max(leftRecoil, rightRecoil);
   if (family === 'rail' && stage !== 'rapid-fire') {
-    railArt(g, x, y, stage, Math.max(leftRecoil, rightRecoil), alpha, plate, box);
+    pedestal(g, x, y, size, alpha, stage, RAIL_PEDESTAL);
+    plate(regularPolygon(6, .09, Math.PI / 6), 0x16323d, color);
+    box(-.02 - recoil, -.045, .34, .09, 0x05080d, color);
+    box(.24 - recoil, -.022, .08, .045, core);
+    plate(regularPolygon(6, .04, Math.PI / 6), core);
+    if (stage === 2) {
+      box(-.01, -.09, .3, .02, color);
+      box(-.02, .07, .3, .02, color);
+    }
+    return;
+  }
+  if (family === 'siege') {
+    pedestal(g, x, y, size, alpha, stage === 2 ? 2 : 1, SIEGE_PEDESTAL);
+    siegeCannon(stage === 2 ? 2 : 1, recoil, angle, color, plate, box);
     return;
   }
   g.roundRect(x - .31 * size, y - .12 * size, .66 * size, .57 * size, .05 * size)
@@ -95,18 +119,6 @@ export function towerArt(g: Graphics, family: TowerFamilyId, x: number, y: numbe
       box(.45-r, y-.045, .025, .09, core);
     }
     box(-.28, -.06, .17, .12, core);
-  } else if (family === 'siege') {
-    plate([-.36,-.28,-.08,-.38,.29,-.29,.36,0,.29,.29,-.08,.38,-.36,.28], 0x41391b, color);
-    for (const side of [-1, 1]) {
-      box(-.3, side < 0 ? -.37 : .23, .38, .14, color);
-      box(-.23, side < 0 ? -.34 : .26, .09, .07, core);
-    }
-    const r = Math.max(leftRecoil, rightRecoil) * .45;
-    plate([-.22-r,-.21,.22-r,-.21,.39-r,-.13,.39-r,.13,.22-r,.21,-.22-r,.21], 0x322a22, color);
-    box(-.13-r, -.15, .29, .3, 0xb67830);
-    box(.15-r, -.17, .14, .34, color);
-    box(.25-r, -.1, .1, .2, 0x1b161b);
-    box(.31-r, -.065, .04, .13, core);
   } else {
     for (let i = 0; i < 3; i++) {
       const a = i * Math.PI * 2 / 3;
@@ -125,14 +137,27 @@ export function towerArt(g: Graphics, family: TowerFamilyId, x: number, y: numbe
 type Plate = (points: number[], fill: number, line?: number) => void;
 type Box = (px: number, py: number, w: number, h: number, fill: number, line?: number) => void;
 
-// A translucent bevelled pedestal that stays still, under a single-barrel turret that turns.
-// Level 2 lights the pedestal seams and adds thin guide rails beside the barrel.
-function railArt(g: Graphics, x: number, y: number, stage: 1 | 2, recoil: number, alpha: number,
-  plate: Plate, box: Box): void {
-  const color = TOWER_COLORS.rail;
-  const { core } = projectileColors('rail');
+interface PedestalStyle {
+  readonly family: TowerFamilyId;
+  readonly sides: number;
+  readonly spin: number;
+  readonly outer: number;
+  readonly inner: number;
+  readonly facet: number;
+  readonly top: number;
+}
+
+const RAIL_PEDESTAL: PedestalStyle = { family: 'rail', sides: 6, spin: 0, outer: .21, inner: .14, facet: 0x1a5f80, top: 0x0b2a3a };
+const SIEGE_PEDESTAL: PedestalStyle = { family: 'siege', sides: 8, spin: Math.PI / 8, outer: .22, inner: .15, facet: 0x7a5a16, top: 0x2a1f08 };
+
+// A translucent bevelled pedestal that stays still while the turret turns. Level 2 lights its seams.
+function pedestal(g: Graphics, x: number, y: number, size: number, alpha: number, stage: 1 | 2, style: PedestalStyle): void {
+  const color = TOWER_COLORS[style.family];
+  const { core } = projectileColors(style.family);
+  const { sides, spin, outer, inner } = style;
+  const step = Math.PI * 2 / sides;
   const ground = (points: number[], fill: number, fillAlpha: number) => {
-    g.poly(points.map((v, i) => (i % 2 === 0 ? x : y) + v * ART_SIZE)).fill({ color: fill, alpha: fillAlpha * alpha });
+    g.poly(points.map((v, i) => (i % 2 === 0 ? x : y) + v * size)).fill({ color: fill, alpha: fillAlpha * alpha });
   };
   const seam = (x1: number, y1: number, x2: number, y2: number) => {
     const length = Math.hypot(x2 - x1, y2 - y1);
@@ -144,26 +169,37 @@ function railArt(g: Graphics, x: number, y: number, stage: 1 | 2, recoil: number
     ground(quad(.006), core, 1);
   };
 
-  ground(regularPolygon(6, .22, 0, .03, .05), 0x000000, .5);
-  for (let i = 0; i < 6; i++) {
-    const a0 = i * Math.PI / 3, a1 = a0 + Math.PI / 3, mid = a0 + Math.PI / 6;
+  ground(regularPolygon(sides, outer + .01, spin, .03, .05), 0x000000, .5);
+  for (let i = 0; i < sides; i++) {
+    const a0 = spin + i * step, a1 = a0 + step, mid = a0 + step / 2;
     const lit = Math.cos(mid) * LIGHT_X + Math.sin(mid) * LIGHT_Y;
-    ground([Math.cos(a0) * .21, Math.sin(a0) * .21, Math.cos(a1) * .21, Math.sin(a1) * .21,
-      Math.cos(a1) * .14, Math.sin(a1) * .14, Math.cos(a0) * .14, Math.sin(a0) * .14],
-    tint(RAIL_PEDESTAL, lit * .5), RAIL_PEDESTAL_ALPHA);
+    ground([Math.cos(a0) * outer, Math.sin(a0) * outer, Math.cos(a1) * outer, Math.sin(a1) * outer,
+      Math.cos(a1) * inner, Math.sin(a1) * inner, Math.cos(a0) * inner, Math.sin(a0) * inner],
+    tint(style.facet, lit * .5), PEDESTAL_ALPHA);
   }
-  ground(regularPolygon(6, .14), RAIL_PEDESTAL_TOP, RAIL_PEDESTAL_ALPHA);
-  if (stage === 2) for (let i = 0; i < 6; i++) {
-    const a = i * Math.PI / 3;
-    seam(Math.cos(a) * .14, Math.sin(a) * .14, Math.cos(a) * .21, Math.sin(a) * .21);
+  ground(regularPolygon(sides, inner, spin), style.top, PEDESTAL_ALPHA);
+  if (stage === 2) for (let i = 0; i < sides; i++) {
+    const a = spin + i * step;
+    seam(Math.cos(a) * inner, Math.sin(a) * inner, Math.cos(a) * outer, Math.sin(a) * outer);
   }
+}
 
-  plate(regularPolygon(6, .09, Math.PI / 6), 0x16323d, color);
-  box(-.02 - recoil, -.045, .34, .09, 0x05080d, color);
-  box(.24 - recoil, -.022, .08, .045, core);
-  plate(regularPolygon(6, .04, Math.PI / 6), core);
+// Carronade: a short, fat bronze barrel with a swelled muzzle and a breech knob. Each tube half is
+// shaded by how much it faces the light, so the barrel reads as round. Level 2 adds glowing hoops.
+function siegeCannon(stage: 1 | 2, recoil: number, angle: number, color: number, plate: Plate, box: Box): void {
+  const lightY = (-Math.sin(angle) * LIGHT_X + Math.cos(angle) * LIGHT_Y) / LIGHT_LENGTH;
+  const tube = (x0: number, x1: number, w0: number, w1: number) => {
+    plate([x0, -w0, x1, -w1, x1, w1, x0, w0], tint(color, -.6), color);
+    plate([x0, 0, x1, 0, x1, w1 * .8, x0, w0 * .8], tint(color, -.6 + .2 * lightY));
+    plate([x0, 0, x1, 0, x1, -w1 * .8, x0, -w0 * .8], tint(color, -.6 - .2 * lightY));
+  };
+  const r = recoil * .5;
+  plate(regularPolygon(8, .05, Math.PI / 8, -.15 - r, 0), tint(color, -.6), color);
+  tube(-.12 - r, .18 - r, .1, .09);
+  tube(.18 - r, .26 - r, .12, .12);
+  box(.23 - r, -.07, .03, .14, 0x05080d);
   if (stage === 2) {
-    box(-.01, -.09, .3, .02, color);
-    box(-.02, .07, .3, .02, color);
+    box(0 - r, -.11, .02, .22, color);
+    box(.1 - r, -.105, .02, .21, color);
   }
 }
