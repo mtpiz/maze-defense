@@ -1,3 +1,5 @@
+import { levelScale } from './neon-art.js';
+
 export interface ShellPoint { readonly x: number; readonly y: number }
 
 export interface ShellPose extends ShellPoint {
@@ -9,6 +11,9 @@ export interface ShellPose extends ShellPoint {
 
 // Peak height of the lobbed arc, in cells drawn up the screen.
 export const SHELL_ARC_HEIGHT = .7;
+
+/** Shell radius in cells: it grows with the firing tower's Level, like the tower, and swells on the arc. */
+export const siegeShellRadius = (level: number, height: number): number => .1 * levelScale(level) * (1 + .3 * height);
 
 /** Siege shell position along its lob from the muzzle to the impact point. */
 export function siegeShellPose(muzzle: ShellPoint, impact: ShellPoint, progress: number): ShellPose {

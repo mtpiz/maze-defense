@@ -3,7 +3,7 @@ import type { BenchmarkViewState } from '../application/benchmark-controller.js'
 import type { CreepSnapshot, PresentationEvent } from '@tower-defense/sim';
 import type { TowerFamilyId } from '@tower-defense/content';
 import { CREEP_COLORS, TOWER_COLORS, primitive, railMuzzle, siegeMuzzle, towerArt } from './neon-art.js';
-import { siegeShellPose } from './siege-shell.js';
+import { siegeShellPose, siegeShellRadius } from './siege-shell.js';
 import { kickBarrel, barrelOffset } from './rail-recoil.js';
 import { eventPoint } from './neon-coordinates.js';
 import { fittedBoard } from './hud-layout.js';
@@ -427,7 +427,8 @@ export class NeonArena {
         }
         // Sphere shading within the family palette: over the dark board, stacked discs that grow more
         // opaque as they shrink toward the top-left light read as a lit face turning into shadow.
-        const radius = .1 * (1 + .3 * shell.height);
+        // Towers have no Levels in the simulation yet, so every shell is fired at Level 1.
+        const radius = siegeShellRadius(1, shell.height);
         for (let i = 0; i < SHELL_SHADE_STEPS; i++) {
           const k = i / SHELL_SHADE_STEPS, drift = radius * .38 * k;
           fx.circle(shell.x - drift * .51, shell.y - drift * .86, radius * (1 - .72 * k)).fill({ color, alpha: .3 + .7 * k });

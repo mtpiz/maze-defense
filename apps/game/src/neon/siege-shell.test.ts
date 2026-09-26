@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SHELL_ARC_HEIGHT, siegeShellPose } from './siege-shell.js';
+import { SHELL_ARC_HEIGHT, siegeShellPose, siegeShellRadius } from './siege-shell.js';
 
 describe('siege shell pose', () => {
   const muzzle = { x: 2, y: 3 };
@@ -18,6 +18,13 @@ describe('siege shell pose', () => {
     expect(top.ground).toEqual({ x: 3.5, y: 5 });
     expect(top.height).toBeCloseTo(1, 12);
     expect(top.y).toBeCloseTo(5 - SHELL_ARC_HEIGHT, 12);
+  });
+
+  it('grows the shell with the Tower Level and swells it at the top of the arc', () => {
+    expect(siegeShellRadius(1, 0)).toBeCloseTo(.1, 12);
+    expect(siegeShellRadius(2, 0)).toBeCloseTo(.105, 12);
+    expect(siegeShellRadius(5, 0)).toBeCloseTo(.12, 12);
+    expect(siegeShellRadius(1, 1)).toBeCloseTo(.13, 12);
   });
 
   it('clamps progress outside the flight', () => {

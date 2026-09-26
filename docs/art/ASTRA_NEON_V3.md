@@ -284,3 +284,12 @@ Updated: 2026-09-25. Owner selection from the tower workbench, Siege round 2 (C1
 - The Siege radial and console icon matches the carronade.
 
 Presentation only: no simulation, balance, or timing values changed.
+
+## Tower Level Presentation Principle
+
+Updated: 2026-09-26. Owner direction for all tower art and effects: each Tower Level must look bigger,
+better, and more satisfying to watch than the one before. Level 1, and even Level 2, stay deliberately
+a little plain. That restraint is what makes upgrading feel rewarding and gives players a reason to
+invest. Every visual that belongs to a tower follows the same ladder: its art grows 5% per Level, its
+projectile grows with it (the Siege shell radius uses the same `levelScale`), and its firing effects
+escalate from restrained at Level 1 to the showiest at Level 5.
