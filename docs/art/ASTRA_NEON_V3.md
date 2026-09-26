@@ -278,7 +278,9 @@ Updated: 2026-09-25. Owner selection from the tower workbench, Siege round 2 (C1
   rapid-fire Rail art counts as Level 3.
 - Siege shells leave the carronade muzzle along the firing direction. A round ball rises and swells on
   the arc above a faint glow that tracks the ground, with a short trail, a muzzle flash, and a puff.
-  All shell effects stay in the Siege color and core, like every other projectile.
+  All shell effects stay in the Siege color and core, like every other projectile. The ball is shaded
+  as a sphere within that palette: stacked discs grow more opaque as they shrink toward the top-left
+  light, so the lower-right edge falls off into the dark board, under a soft two-step highlight.
 - The Siege radial and console icon matches the carronade.
 
 Presentation only: no simulation, balance, or timing values changed.

@@ -20,6 +20,9 @@ interface Burst { x: number; y: number; kind: string; born: number; seed: number
 interface Aim { angle: number; left: number; right: number; shots: number }
 interface CreepHeading { angle: number; target: number; updatedAt: number; x: number; y: number }
 
+// Discs stacked to shade the Siege shell as a sphere.
+const SHELL_SHADE_STEPS = 8;
+
 const endpointArrow = (g: Graphics, x: number, y: number, angle: number, color: number): void => {
   const transform = (forward: number, side: number): Point => ({
     x: x + Math.cos(angle) * forward - Math.sin(angle) * side,
@@ -422,9 +425,15 @@ export class NeonArena {
           const trail = siegeShellPose(muzzle, end, t - k * .045);
           fx.circle(trail.x, trail.y, .05).fill({ color, alpha: .12 * (4 - k) });
         }
+        // Sphere shading within the family palette: over the dark board, stacked discs that grow more
+        // opaque as they shrink toward the top-left light read as a lit face turning into shadow.
         const radius = .1 * (1 + .3 * shell.height);
-        fx.circle(shell.x, shell.y, radius).fill(color).stroke({ color: core, width: .02 });
-        fx.circle(shell.x - radius * .3, shell.y - radius * .35, radius * .35).fill({ color: core, alpha: .9 });
+        for (let i = 0; i < SHELL_SHADE_STEPS; i++) {
+          const k = i / SHELL_SHADE_STEPS, drift = radius * .38 * k;
+          fx.circle(shell.x - drift * .51, shell.y - drift * .86, radius * (1 - .72 * k)).fill({ color, alpha: .3 + .7 * k });
+        }
+        fx.circle(shell.x - radius * .34, shell.y - radius * .42, radius * .3).fill({ color: core, alpha: .45 });
+        fx.circle(shell.x - radius * .38, shell.y - radius * .46, radius * .14).fill({ color: core, alpha: .95 });
       } else if (p.mechanicId === 'rail-line' && age < 160) {
         const a = Math.atan2(end.y - from.y, end.x - from.x);
         const { forward, side } = railMuzzle(1, barrel, this.reducedMotion ? 0 : barrelOffset(born, this.#time));
